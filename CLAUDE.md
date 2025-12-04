@@ -111,3 +111,13 @@ Before implementing features, consult:
 1. [Next.js 16 docs](https://nextjs.org/docs) - App Router patterns, Server vs Client Components
 2. [shadcn/ui docs](https://ui.shadcn.com) - Component installation and usage
 3. [React 19 docs](https://react.dev) - Hooks and patterns
+
+## Git Commit Rules
+
+**IMPORTANT**: When creating commits, never include:
+
+- "Generated with Claude Code" or similar AI attribution
+- "Co-Authored-By: Claude" or any co-author mention
+- Any reference to AI tools in commit messages
+
+All commits must be attributed solely to the repository owner.

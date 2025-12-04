@@ -117,11 +117,13 @@ src/
 
 ### User Experience
 
+- **Guided onboarding**: 4-step wizard to help new users set up their first profile, project, platform, and generate their first post
 - Toast notifications for all actions
 - Comprehensive error handling with error boundaries
 - Loading states and skeleton loaders
 - Accessibility improvements (skip links, ARIA labels, keyboard navigation)
 - Reusable UI components (PageHeader, etc.)
+- Celebration animations (confetti) for key milestones
 
 ## License
 

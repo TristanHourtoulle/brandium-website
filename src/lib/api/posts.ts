@@ -79,8 +79,8 @@ export async function fetchPosts(
  * Fetch a single post by ID
  */
 export async function fetchPostById(id: string): Promise<Post> {
-  const response = await apiClient.get<PostApiResponse>(`/api/posts/${id}`);
-  return transformPost(response);
+  const response = await apiClient.get<{ data: PostApiResponse }>(`/api/posts/${id}`);
+  return transformPost(response.data);
 }
 
 /**
