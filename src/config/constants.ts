@@ -15,3 +15,4 @@ export const ROUTES = {
 } as const;
 
 export const AUTH_TOKEN_KEY = "brandium_auth_token";
+export const ONBOARDING_COMPLETED_KEY = "brandium_onboarding_completed";

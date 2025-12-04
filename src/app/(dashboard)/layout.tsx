@@ -7,6 +7,8 @@ import { ROUTES } from "@/config/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { OnboardingProvider } from "@/lib/providers/onboarding-provider";
+import { OnboardingWizard } from "@/components/features/onboarding";
 
 export default function DashboardLayout({
   children,
@@ -43,22 +45,27 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
-        <Sidebar />
-      </aside>
+    <OnboardingProvider>
+      <div className="flex min-h-screen bg-background">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
+          <Sidebar />
+        </aside>
 
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col lg:pl-64">
-        {/* Mobile Header */}
-        <MobileNav />
+        {/* Main Content */}
+        <div className="flex flex-1 flex-col lg:pl-64">
+          {/* Mobile Header */}
+          <MobileNav />
 
-        {/* Page Content */}
-        <main id="main-content" className="flex-1 px-4 py-6 lg:px-8" tabIndex={-1}>
-          {children}
-        </main>
+          {/* Page Content */}
+          <main id="main-content" className="flex-1 px-4 py-6 lg:px-8" tabIndex={-1}>
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+
+      {/* Onboarding Wizard Modal */}
+      <OnboardingWizard />
+    </OnboardingProvider>
   );
 }

@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useProfiles } from "@/lib/hooks/use-profiles";
 import { useProjects } from "@/lib/hooks/use-projects";
 import { usePlatforms } from "@/lib/hooks/use-platforms";
 import { usePosts } from "@/lib/hooks/use-posts";
+import { useOnboardingContext } from "@/lib/providers/onboarding-provider";
+import { shouldShowOnboarding } from "@/lib/services/onboarding";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -33,9 +36,26 @@ export default function DashboardPage() {
   const { projects, isLoading: projectsLoading } = useProjects();
   const { platforms, isLoading: platformsLoading } = usePlatforms();
   const { posts, isLoading: postsLoading, pagination } = usePosts();
+  const { openOnboarding, isOpen: isOnboardingOpen } = useOnboardingContext();
 
   // Get up to 3 most recent posts for dashboard preview
   const recentPosts = posts.slice(0, 3);
+
+  // Check if we should show onboarding when data is loaded
+  const isDataLoaded = !profilesLoading && !projectsLoading && !postsLoading;
+
+  useEffect(() => {
+    if (isDataLoaded && !isOnboardingOpen) {
+      const showOnboarding = shouldShowOnboarding(
+        profiles.length,
+        projects.length,
+        pagination.totalItems
+      );
+      if (showOnboarding) {
+        openOnboarding();
+      }
+    }
+  }, [isDataLoaded, profiles.length, projects.length, pagination.totalItems, openOnboarding, isOnboardingOpen]);
 
   const stats = [
     {
