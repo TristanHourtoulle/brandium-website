@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/page-header";
 import { PlatformList } from "@/components/features/platforms";
 import { usePlatforms } from "@/lib/hooks/use-platforms";
 import { ROUTES } from "@/config/constants";
@@ -12,21 +13,17 @@ export default function PlatformsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Platforms</h1>
-          <p className="text-muted-foreground">
-            Configure social media platforms with style guidelines and character
-            limits.
-          </p>
-        </div>
+      <PageHeader
+        title="Platforms"
+        description="Configure social media platforms with style guidelines and character limits."
+      >
         <Button asChild>
           <Link href={`${ROUTES.PLATFORMS}/new`}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
             Add Platform
           </Link>
         </Button>
-      </div>
+      </PageHeader>
 
       <PlatformList
         platforms={platforms}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/page-header";
 import { ProjectList } from "@/components/features/projects";
 import { useProjects } from "@/lib/hooks/use-projects";
 import { ROUTES } from "@/config/constants";
@@ -12,21 +13,17 @@ export default function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-          <p className="text-muted-foreground">
-            Organize your content around specific topics, products, or
-            campaigns.
-          </p>
-        </div>
+      <PageHeader
+        title="Projects"
+        description="Organize your content around specific topics, products, or campaigns."
+      >
         <Button asChild>
           <Link href={`${ROUTES.PROJECTS}/new`}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
             New Project
           </Link>
         </Button>
-      </div>
+      </PageHeader>
 
       <ProjectList
         projects={projects}

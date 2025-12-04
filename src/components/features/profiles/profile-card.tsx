@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MoreHorizontal, Trash2 } from "lucide-react";
@@ -26,15 +27,15 @@ interface ProfileCardProps {
   onDelete: (id: string) => void;
 }
 
-export function ProfileCard({ profile, onDelete }: ProfileCardProps) {
+function ProfileCardComponent({ profile, onDelete }: ProfileCardProps) {
   const router = useRouter();
   const tone = profile.tone ?? [];
   const doRules = profile.doRules ?? [];
   const dontRules = profile.dontRules ?? [];
 
-  const handleCardClick = () => {
+  const handleCardClick = useCallback(() => {
     router.push(`${ROUTES.PROFILES}/${profile.id}`);
-  };
+  }, [router, profile.id]);
 
   return (
     <Card
@@ -106,3 +107,5 @@ export function ProfileCard({ profile, onDelete }: ProfileCardProps) {
     </Card>
   );
 }
+
+export const ProfileCard = memo(ProfileCardComponent);

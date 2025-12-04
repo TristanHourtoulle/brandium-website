@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/hooks/use-auth";
 import { useProfiles } from "@/lib/hooks/use-profiles";
 import { useProjects } from "@/lib/hooks/use-projects";
 import { usePlatforms } from "@/lib/hooks/use-platforms";
+import { usePosts } from "@/lib/hooks/use-posts";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layout/page-header";
 import {
   Sparkles,
   User,
@@ -21,6 +23,7 @@ import {
   Share2,
   FileText,
   Plus,
+  ArrowRight,
 } from "lucide-react";
 import { APP_NAME, ROUTES } from "@/config/constants";
 
@@ -29,6 +32,10 @@ export default function DashboardPage() {
   const { profiles, isLoading: profilesLoading } = useProfiles();
   const { projects, isLoading: projectsLoading } = useProjects();
   const { platforms, isLoading: platformsLoading } = usePlatforms();
+  const { posts, isLoading: postsLoading, pagination } = usePosts();
+
+  // Get up to 3 most recent posts for dashboard preview
+  const recentPosts = posts.slice(0, 3);
 
   const stats = [
     {
@@ -54,22 +61,19 @@ export default function DashboardPage() {
     },
     {
       label: "Posts",
-      value: 0,
+      value: pagination.totalItems,
       icon: FileText,
       href: ROUTES.POSTS,
-      isLoading: false,
+      isLoading: postsLoading,
     },
   ];
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back to {APP_NAME}
-          {user?.email ? `, ${user.email}` : ""}
-        </p>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description={`Welcome back to ${APP_NAME}${user?.email ? `, ${user.email}` : ""}`}
+      />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
@@ -123,24 +127,86 @@ export default function DashboardPage() {
                 Configure a Platform
               </Link>
             </Button>
-            <Button className="justify-start" disabled>
-              <Sparkles className="mr-2 h-4 w-4" />
-              Generate Content
+            <Button className="justify-start" asChild>
+              <Link href={ROUTES.GENERATE}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate Content
+              </Link>
             </Button>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Posts</CardTitle>
-            <CardDescription>Your latest generated content</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Recent Posts</CardTitle>
+              <CardDescription>Your latest generated content</CardDescription>
+            </div>
+            {recentPosts.length > 0 && (
+              <Button variant="ghost" size="sm" asChild>
+                <Link href={ROUTES.POSTS}>
+                  View all
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
-            <div className="flex h-32 items-center justify-center rounded-md border border-dashed">
-              <p className="text-sm text-muted-foreground">
-                No posts generated yet
-              </p>
-            </div>
+            {postsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <Skeleton className="h-10 w-10 rounded" />
+                    <div className="flex-1 space-y-1">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : recentPosts.length === 0 ? (
+              <div className="flex h-32 flex-col items-center justify-center rounded-md border border-dashed">
+                <FileText className="mb-2 h-8 w-8 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">
+                  No posts generated yet
+                </p>
+                <Button variant="link" size="sm" className="mt-2" asChild>
+                  <Link href={ROUTES.GENERATE}>
+                    <Sparkles className="mr-1 h-3 w-3" />
+                    Generate your first post
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentPosts.map((post) => (
+                  <Link
+                    key={post.id}
+                    href={`${ROUTES.POSTS}/${post.id}`}
+                    className="flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-primary/10">
+                      <FileText className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {post.content.length > 60
+                          ? `${post.content.substring(0, 60)}...`
+                          : post.content}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(post.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                        {post.platform && ` · ${post.platform.name}`}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
