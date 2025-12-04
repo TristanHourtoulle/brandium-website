@@ -82,26 +82,46 @@ src/
 ├── components/
 │   ├── ui/                # shadcn/ui components
 │   ├── forms/             # Form components
+│   ├── features/          # Feature-specific components
 │   └── layout/            # Layout components
 ├── lib/
 │   ├── api/               # API client functions
 │   ├── hooks/             # Custom React hooks
+│   ├── services/          # Business logic services
 │   ├── utils/             # Utility functions
 │   └── providers/         # Context providers
 ├── types/                 # TypeScript type definitions
 └── config/                # Environment and constants
 ```
 
-## Features (Phase 1)
+## Features
+
+### Core Features
 
 - User authentication (login/register)
-- Protected routes
+- Protected routes with dashboard layout
 - Dark/light mode support
-- Toast notifications
 - Responsive design
-- Profile management (create, view, edit, delete)
-- Platform management (create, view, edit, delete)
-- Project management (create, view, edit, delete)
+
+### Content Management
+
+- **Profile management**: Create and manage personal brand profiles with tone, voice guidelines, and rules
+- **Platform management**: Configure social media platforms with style guidelines and character limits
+- **Project management**: Organize content around specific topics, products, or campaigns
+
+### AI Content Generation
+
+- **Post generation**: Generate personalized social media posts using AI
+- **Rate limiting**: Built-in rate limit tracking and display
+- **Post history**: View, filter, search, and manage all generated posts
+
+### User Experience
+
+- Toast notifications for all actions
+- Comprehensive error handling with error boundaries
+- Loading states and skeleton loaders
+- Accessibility improvements (skip links, ARIA labels, keyboard navigation)
+- Reusable UI components (PageHeader, etc.)
 
 ## License
 

@@ -92,3 +92,76 @@ export const platformSchema = z.object({
 });
 
 export type PlatformFormData = z.infer<typeof platformSchema>;
+
+// Generate validation schemas
+export const generateRequestSchema = z.object({
+  profileId: z.string().uuid("Invalid profile ID"),
+  projectId: z.string().uuid("Invalid project ID").optional(),
+  platformId: z.string().uuid("Invalid platform ID").optional(),
+  goal: z
+    .string()
+    .max(200, "Goal must be less than 200 characters")
+    .optional()
+    .transform((val) => (val === "" ? undefined : val)),
+  rawIdea: z
+    .string()
+    .min(10, "Your idea must be at least 10 characters")
+    .max(2000, "Your idea must be less than 2000 characters"),
+});
+
+export type GenerateFormData = z.infer<typeof generateRequestSchema>;
+
+// Post validation schemas
+export const postSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+  content: z.string().min(1),
+  platformId: z.string().uuid().optional(),
+  profileId: z.string().uuid().optional(),
+  projectId: z.string().uuid().optional(),
+  goal: z.string().optional(),
+  rawIdea: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  platform: z
+    .object({
+      id: z.string().uuid(),
+      name: z.string(),
+    })
+    .optional(),
+  profile: z
+    .object({
+      id: z.string().uuid(),
+      name: z.string(),
+    })
+    .optional(),
+  project: z
+    .object({
+      id: z.string().uuid(),
+      name: z.string(),
+    })
+    .optional(),
+});
+
+export const paginationSchema = z.object({
+  currentPage: z.number().int().positive(),
+  totalPages: z.number().int().nonnegative(),
+  totalItems: z.number().int().nonnegative(),
+  itemsPerPage: z.number().int().positive(),
+});
+
+export const postsResponseSchema = z.object({
+  posts: z.array(postSchema),
+  pagination: paginationSchema,
+});
+
+export const postFiltersSchema = z.object({
+  search: z.string().max(100, "Search query too long").optional(),
+  platformId: z.string().uuid("Invalid platform ID").optional(),
+  profileId: z.string().uuid("Invalid profile ID").optional(),
+  projectId: z.string().uuid("Invalid project ID").optional(),
+  page: z.number().int().positive().optional(),
+  limit: z.number().int().positive().max(100).optional(),
+});
+
+export type PostFiltersFormData = z.infer<typeof postFiltersSchema>;
