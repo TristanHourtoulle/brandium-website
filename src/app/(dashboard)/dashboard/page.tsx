@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useProfiles } from "@/lib/hooks/use-profiles";
+import { useProjects } from "@/lib/hooks/use-projects";
+import { usePlatforms } from "@/lib/hooks/use-platforms";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,6 +27,8 @@ import { APP_NAME, ROUTES } from "@/config/constants";
 export default function DashboardPage() {
   const { user } = useAuth();
   const { profiles, isLoading: profilesLoading } = useProfiles();
+  const { projects, isLoading: projectsLoading } = useProjects();
+  const { platforms, isLoading: platformsLoading } = usePlatforms();
 
   const stats = [
     {
@@ -36,17 +40,17 @@ export default function DashboardPage() {
     },
     {
       label: "Projects",
-      value: 0,
+      value: projects.length,
       icon: Briefcase,
       href: ROUTES.PROJECTS,
-      isLoading: false,
+      isLoading: projectsLoading,
     },
     {
       label: "Platforms",
-      value: 0,
+      value: platforms.length,
       icon: Share2,
       href: ROUTES.PLATFORMS,
-      isLoading: false,
+      isLoading: platformsLoading,
     },
     {
       label: "Posts",
@@ -107,13 +111,17 @@ export default function DashboardPage() {
                 Create a Profile
               </Link>
             </Button>
-            <Button variant="outline" className="justify-start" disabled>
-              <Briefcase className="mr-2 h-4 w-4" />
-              Add a Project
+            <Button variant="outline" className="justify-start" asChild>
+              <Link href={`${ROUTES.PROJECTS}/new`}>
+                <Briefcase className="mr-2 h-4 w-4" />
+                Add a Project
+              </Link>
             </Button>
-            <Button variant="outline" className="justify-start" disabled>
-              <Share2 className="mr-2 h-4 w-4" />
-              Configure a Platform
+            <Button variant="outline" className="justify-start" asChild>
+              <Link href={`${ROUTES.PLATFORMS}/new`}>
+                <Share2 className="mr-2 h-4 w-4" />
+                Configure a Platform
+              </Link>
             </Button>
             <Button className="justify-start" disabled>
               <Sparkles className="mr-2 h-4 w-4" />

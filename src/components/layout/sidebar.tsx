@@ -77,9 +77,9 @@ export function Sidebar() {
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-1 flex-col items-start text-left">
-                <span className="text-sm font-medium truncate max-w-[140px]">
-                  {user?.email}
+              <div className="flex flex-1 flex-col items-start text-left min-w-0">
+                <span className="text-sm font-medium truncate w-full">
+                  {user?.email || "Loading..."}
                 </span>
               </div>
               <ChevronDown className="h-4 w-4 text-muted-foreground" />

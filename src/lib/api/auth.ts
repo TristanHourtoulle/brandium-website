@@ -29,8 +29,13 @@ export async function register(credentials: RegisterCredentials): Promise<Regist
   });
 }
 
+interface MeResponse {
+  user: User;
+}
+
 export async function getCurrentUser(): Promise<User> {
-  return apiClient.get<User>("/api/auth/me");
+  const response = await apiClient.get<MeResponse>("/api/auth/me");
+  return response.user;
 }
 
 export async function refreshToken(): Promise<AuthTokens> {
