@@ -76,6 +76,7 @@ export function OnboardingProgress({
                     type="button"
                     onClick={() => isClickable && onStepClick?.(step.step)}
                     disabled={!isClickable}
+                    aria-label={`Step ${step.step}: ${step.label}`}
                     className={cn(
                       "group flex flex-col items-center",
                       isClickable && "cursor-pointer",

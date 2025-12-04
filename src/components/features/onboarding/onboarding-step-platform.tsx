@@ -10,10 +10,9 @@ import { PlatformSelector, type PlatformOption } from "./platform-selector";
 
 interface OnboardingStepPlatformProps {
   onComplete: () => void;
-  onBack: () => void;
 }
 
-export function OnboardingStepPlatform({ onComplete, onBack }: OnboardingStepPlatformProps) {
+export function OnboardingStepPlatform({ onComplete }: OnboardingStepPlatformProps) {
   const { createPlatform } = usePlatforms();
   const { setPlatformData, setLoading, prevStep } = useOnboardingContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,7 +52,6 @@ export function OnboardingStepPlatform({ onComplete, onBack }: OnboardingStepPla
 
   const handleBack = () => {
     prevStep();
-    onBack();
   };
 
   return (

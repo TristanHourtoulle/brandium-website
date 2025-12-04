@@ -53,6 +53,7 @@ interface OnboardingProviderProps {
 export function OnboardingProvider({ children }: OnboardingProviderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const onboarding = useOnboarding();
+  const { reset } = onboarding;
 
   const openOnboarding = useCallback(() => {
     setIsOpen(true);
@@ -65,14 +66,14 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
   const completeOnboardingHandler = useCallback(() => {
     completeOnboardingStorage();
     setIsOpen(false);
-    onboarding.reset();
-  }, [onboarding]);
+    reset();
+  }, [reset]);
 
   const skipOnboarding = useCallback(() => {
     completeOnboardingStorage();
     setIsOpen(false);
-    onboarding.reset();
-  }, [onboarding]);
+    reset();
+  }, [reset]);
 
   return (
     <OnboardingContext.Provider

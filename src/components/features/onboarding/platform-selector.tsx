@@ -42,7 +42,7 @@ const platformOptions: PlatformOption[] = [
     name: "TikTok",
     icon: "🎵",
     description: "Short-form video and trending content",
-    styleGuidelines: "Casual and trendy tone, use trending sounds reference, include hashtags, be authentic and relatable",
+    styleGuidelines: "Casual and trendy tone, reference trending sounds, include hashtags, be authentic and relatable",
     maxLength: 2200,
   },
   {

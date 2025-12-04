@@ -48,10 +48,6 @@ export function OnboardingWizard() {
     }
   };
 
-  const handleBack = () => {
-    // Navigation is handled by the step components
-  };
-
   const handleFinish = () => {
     closeOnboarding();
   };
@@ -65,26 +61,11 @@ export function OnboardingWizard() {
       case 1:
         return <OnboardingStepProfile onComplete={handleStepComplete} />;
       case 2:
-        return (
-          <OnboardingStepProject
-            onComplete={handleStepComplete}
-            onBack={handleBack}
-          />
-        );
+        return <OnboardingStepProject onComplete={handleStepComplete} />;
       case 3:
-        return (
-          <OnboardingStepPlatform
-            onComplete={handleStepComplete}
-            onBack={handleBack}
-          />
-        );
+        return <OnboardingStepPlatform onComplete={handleStepComplete} />;
       case 4:
-        return (
-          <OnboardingStepGenerate
-            onComplete={handleFinish}
-            onBack={handleBack}
-          />
-        );
+        return <OnboardingStepGenerate onComplete={handleFinish} />;
       default:
         return null;
     }

@@ -15,10 +15,9 @@ import { useOnboardingContext } from "@/lib/providers/onboarding-provider";
 
 interface OnboardingStepProjectProps {
   onComplete: () => void;
-  onBack: () => void;
 }
 
-export function OnboardingStepProject({ onComplete, onBack }: OnboardingStepProjectProps) {
+export function OnboardingStepProject({ onComplete }: OnboardingStepProjectProps) {
   const { createProject } = useProjects();
   const { setProjectData, data, setLoading, prevStep } = useOnboardingContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -97,7 +96,6 @@ export function OnboardingStepProject({ onComplete, onBack }: OnboardingStepProj
 
   const handleBack = () => {
     prevStep();
-    onBack();
   };
 
   return (

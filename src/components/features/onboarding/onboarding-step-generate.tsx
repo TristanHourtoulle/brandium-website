@@ -26,10 +26,9 @@ type GenerateFormData = z.infer<typeof generateFormSchema>;
 
 interface OnboardingStepGenerateProps {
   onComplete: () => void;
-  onBack: () => void;
 }
 
-export function OnboardingStepGenerate({ onComplete, onBack }: OnboardingStepGenerateProps) {
+export function OnboardingStepGenerate({ onComplete }: OnboardingStepGenerateProps) {
   const { generate, regenerate, generatedPost, isGenerating, rateLimitStatus, isRateLimited } = useGenerate();
   const { data, setPostData, completeOnboarding, prevStep } = useOnboardingContext();
   const [copied, setCopied] = useState(false);
@@ -142,7 +141,6 @@ export function OnboardingStepGenerate({ onComplete, onBack }: OnboardingStepGen
 
   const handleBack = () => {
     prevStep();
-    onBack();
   };
 
   return (
