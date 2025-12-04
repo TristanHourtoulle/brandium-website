@@ -105,19 +105,21 @@ describe("Posts API", () => {
 
   describe("fetchPostById", () => {
     it("should fetch a single post by ID and transform response", async () => {
-      // Mock API response format (with generatedText)
-      const mockApiPost = {
-        id: "post-1",
-        userId: "user-1",
-        generatedText: "Test content",
-        rawIdea: "Test idea",
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z",
-        profile: { id: "profile-1", name: "Test Profile" },
-        platform: { id: "platform-1", name: "LinkedIn" },
+      // Mock API response format (wrapped in data, with generatedText)
+      const mockApiResponse = {
+        data: {
+          id: "post-1",
+          userId: "user-1",
+          generatedText: "Test content",
+          rawIdea: "Test idea",
+          createdAt: "2024-01-01T00:00:00Z",
+          updatedAt: "2024-01-01T00:00:00Z",
+          profile: { id: "profile-1", name: "Test Profile" },
+          platform: { id: "platform-1", name: "LinkedIn" },
+        },
       };
 
-      vi.mocked(apiClient.get).mockResolvedValue(mockApiPost);
+      vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
 
       const result = await fetchPostById("post-1");
 
