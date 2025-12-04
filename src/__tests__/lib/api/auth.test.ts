@@ -122,7 +122,7 @@ describe("Auth API", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => mockUser,
+        json: async () => ({ user: mockUser }),
       });
 
       const result = await getCurrentUser();
