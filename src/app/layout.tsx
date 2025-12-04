@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/lib/providers/theme-provider";
 import { AuthProvider } from "@/lib/providers/auth-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { SkipLink } from "@/components/layout/skip-link";
 import { APP_NAME, APP_DESCRIPTION } from "@/config/constants";
 
 const geistSans = Geist({
@@ -38,6 +39,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
+            <SkipLink />
             {children}
             <Toaster />
           </AuthProvider>

@@ -55,7 +55,9 @@ export default function DashboardLayout({
         <MobileNav />
 
         {/* Page Content */}
-        <main className="flex-1 px-4 py-6 lg:px-8">{children}</main>
+        <main id="main-content" className="flex-1 px-4 py-6 lg:px-8" tabIndex={-1}>
+          {children}
+        </main>
       </div>
     </div>
   );
