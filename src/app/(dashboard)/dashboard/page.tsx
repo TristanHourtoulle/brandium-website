@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useAuth } from "@/lib/hooks/use-auth";
+import { useProfiles } from "@/lib/hooks/use-profiles";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,53 +11,83 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Sparkles, User, Briefcase, Share2, FileText, LogOut } from "lucide-react";
-import { APP_NAME } from "@/config/constants";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Sparkles,
+  User,
+  Briefcase,
+  Share2,
+  FileText,
+  Plus,
+} from "lucide-react";
+import { APP_NAME, ROUTES } from "@/config/constants";
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const { profiles, isLoading: profilesLoading } = useProfiles();
 
   const stats = [
-    { label: "Profiles", value: 0, icon: User },
-    { label: "Projects", value: 0, icon: Briefcase },
-    { label: "Platforms", value: 0, icon: Share2 },
-    { label: "Posts", value: 0, icon: FileText },
+    {
+      label: "Profiles",
+      value: profiles.length,
+      icon: User,
+      href: ROUTES.PROFILES,
+      isLoading: profilesLoading,
+    },
+    {
+      label: "Projects",
+      value: 0,
+      icon: Briefcase,
+      href: ROUTES.PROJECTS,
+      isLoading: false,
+    },
+    {
+      label: "Platforms",
+      value: 0,
+      icon: Share2,
+      href: ROUTES.PLATFORMS,
+      isLoading: false,
+    },
+    {
+      label: "Posts",
+      value: 0,
+      icon: FileText,
+      href: ROUTES.POSTS,
+      isLoading: false,
+    },
   ];
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back to {APP_NAME}, {user?.email}
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Badge variant="secondary">{user?.email}</Badge>
-          <Button variant="outline" size="sm" onClick={logout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign out
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Welcome back to {APP_NAME}
+          {user?.email ? `, ${user.email}` : ""}
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.label}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.label}
-                </CardTitle>
-                <Icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
+            <Link key={stat.label} href={stat.href}>
+              <Card className="transition-colors hover:bg-muted/50">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {stat.label}
+                  </CardTitle>
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  {stat.isLoading ? (
+                    <Skeleton className="h-8 w-12" />
+                  ) : (
+                    <div className="text-2xl font-bold">{stat.value}</div>
+                  )}
+                </CardContent>
+              </Card>
+            </Link>
           );
         })}
       </div>
@@ -69,9 +101,11 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-2">
-            <Button variant="outline" className="justify-start" disabled>
-              <User className="mr-2 h-4 w-4" />
-              Create a Profile
+            <Button variant="outline" className="justify-start" asChild>
+              <Link href={`${ROUTES.PROFILES}/new`}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create a Profile
+              </Link>
             </Button>
             <Button variant="outline" className="justify-start" disabled>
               <Briefcase className="mr-2 h-4 w-4" />
