@@ -99,6 +99,9 @@ src/
 - Dark/light mode support
 - Toast notifications
 - Responsive design
+- Profile management (create, view, edit, delete)
+- Platform management (create, view, edit, delete)
+- Project management (create, view, edit, delete)
 
 ## License
 
