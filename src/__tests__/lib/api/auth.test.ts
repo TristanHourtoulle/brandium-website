@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { login, register, getCurrentUser } from "@/lib/api/auth";
+import { login, register, getCurrentUser, refreshToken } from "@/lib/api/auth";
 
 describe("Auth API", () => {
   const mockFetch = vi.fn();
@@ -14,7 +14,8 @@ describe("Auth API", () => {
     it("should call login endpoint with credentials", async () => {
       const mockResponse = {
         user: { id: "1", email: "test@example.com" },
-        accessToken: "test-token",
+        token: "test-token",
+        message: "Login successful",
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -62,7 +63,8 @@ describe("Auth API", () => {
     it("should call register endpoint with credentials", async () => {
       const mockResponse = {
         user: { id: "1", email: "new@example.com" },
-        accessToken: "new-token",
+        token: "new-token",
+        message: "Registration successful",
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -147,6 +149,45 @@ describe("Auth API", () => {
 
       await expect(getCurrentUser()).rejects.toMatchObject({
         message: "Unauthorized",
+        statusCode: 401,
+      });
+    });
+  });
+
+  describe("refreshToken", () => {
+    it("should call refresh endpoint and return new tokens", async () => {
+      const mockTokens = {
+        accessToken: "new-access-token",
+        refreshToken: "new-refresh-token",
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockTokens,
+      });
+
+      const result = await refreshToken();
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining("/api/auth/refresh"),
+        expect.objectContaining({
+          method: "POST",
+        })
+      );
+
+      expect(result).toEqual(mockTokens);
+    });
+
+    it("should throw on invalid refresh token", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ message: "Invalid refresh token" }),
+      });
+
+      await expect(refreshToken()).rejects.toMatchObject({
+        message: "Invalid refresh token",
         statusCode: 401,
       });
     });
