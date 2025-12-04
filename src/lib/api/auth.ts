@@ -8,12 +8,14 @@ import type {
 
 interface LoginResponse {
   user: User;
-  accessToken: string;
+  token: string;
+  message?: string;
 }
 
 interface RegisterResponse {
   user: User;
-  accessToken: string;
+  token: string;
+  message?: string;
 }
 
 export async function login(credentials: LoginCredentials): Promise<LoginResponse> {

@@ -30,39 +30,56 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const isAuthenticated = !!user;
 
   const loadUser = useCallback(async () => {
+    // Check if we're in the browser
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const token = localStorage.getItem(AUTH_TOKEN_KEY);
     if (!token) {
       setIsLoading(false);
+      setIsInitialized(true);
       return;
     }
 
     try {
       const userData = await authApi.getCurrentUser();
       setUser(userData);
-    } catch {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
+    } catch (error) {
+      // Only remove token on auth errors (401), not on network errors
+      const statusCode = (error as { statusCode?: number })?.statusCode;
+      if (statusCode === 401 || statusCode === 403) {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+      }
+      // Log error for debugging
+      console.error("Failed to load user:", error);
     } finally {
       setIsLoading(false);
+      setIsInitialized(true);
     }
   }, []);
 
   useEffect(() => {
-    loadUser();
-  }, [loadUser]);
+    // Only load user once on mount
+    if (!isInitialized) {
+      loadUser();
+    }
+  }, [loadUser, isInitialized]);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     const response = await authApi.login(credentials);
-    localStorage.setItem(AUTH_TOKEN_KEY, response.accessToken);
+    localStorage.setItem(AUTH_TOKEN_KEY, response.token);
     setUser(response.user);
   }, []);
 
   const register = useCallback(async (credentials: RegisterCredentials) => {
     const response = await authApi.register(credentials);
-    localStorage.setItem(AUTH_TOKEN_KEY, response.accessToken);
+    localStorage.setItem(AUTH_TOKEN_KEY, response.token);
     setUser(response.user);
   }, []);
 
