@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { ROUTES } from "@/config/constants";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNav } from "@/components/layout/mobile-nav";
 
 export default function DashboardLayout({
   children,
@@ -41,8 +43,20 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-8">{children}</main>
+    <div className="flex min-h-screen bg-background">
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
+        <Sidebar />
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col lg:pl-64">
+        {/* Mobile Header */}
+        <MobileNav />
+
+        {/* Page Content */}
+        <main className="flex-1 px-4 py-6 lg:px-8">{children}</main>
+      </div>
     </div>
   );
 }
