@@ -114,3 +114,69 @@
     font-family: var(--font-sans), system-ui, sans-serif;
   }
 }
+
+/* Toast progress bar animation */
+@keyframes toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Sonner toast custom styles */
+[data-sonner-toaster] [data-sonner-toast] {
+  --toast-progress-color: hsl(var(--primary));
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="success"] {
+  --toast-progress-color: rgb(16 185 129);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="error"] {
+  --toast-progress-color: rgb(239 68 68);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="warning"] {
+  --toast-progress-color: rgb(245 158 11);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="info"] {
+  --toast-progress-color: rgb(59 130 246);
+}
+
+/* Progress bar */
+[data-sonner-toaster] [data-sonner-toast]::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--toast-progress-color);
+  transform-origin: left;
+  animation: toast-progress 4000ms linear forwards;
+  border-radius: 0 0 12px 12px;
+}
+
+/* Pause progress on hover */
+[data-sonner-toaster] [data-sonner-toast]:hover::after {
+  animation-play-state: paused;
+}
+
+/* Toast enter animation */
+[data-sonner-toaster] [data-sonner-toast][data-mounted="true"] {
+  animation: toast-enter 0.35s cubic-bezier(0.21, 1.02, 0.73, 1);
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
