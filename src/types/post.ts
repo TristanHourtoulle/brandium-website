@@ -10,6 +10,10 @@ export interface Post {
   createdAt: string;
   updatedAt: string;
 
+  // Version tracking
+  currentVersionId?: string;
+  totalVersions: number;
+
   // Populated relations (from API)
   platform?: {
     id: string;
@@ -37,6 +41,8 @@ export interface PostApiResponse {
   rawIdea: string;
   createdAt: string;
   updatedAt: string;
+  currentVersionId?: string;
+  totalVersions: number;
   platform?: {
     id: string;
     name: string;

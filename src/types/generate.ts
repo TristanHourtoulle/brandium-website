@@ -15,6 +15,10 @@ export interface GeneratedPost {
   goal?: string;
   rawIdea: string;
   createdAt: string;
+  // Version tracking
+  versionId?: string;
+  versionNumber?: number;
+  totalVersions?: number;
 }
 
 export interface RateLimitStatus {

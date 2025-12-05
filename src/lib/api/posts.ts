@@ -42,6 +42,10 @@ function transformPost(apiPost: PostApiResponse): Post {
     rawIdea: apiPost.rawIdea,
     createdAt: apiPost.createdAt,
     updatedAt: apiPost.updatedAt,
+    // Version tracking
+    currentVersionId: apiPost.currentVersionId,
+    totalVersions: apiPost.totalVersions ?? 1,
+    // Relations
     platform: apiPost.platform,
     profile: apiPost.profile,
     project: apiPost.project,

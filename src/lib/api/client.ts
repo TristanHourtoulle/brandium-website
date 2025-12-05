@@ -109,6 +109,26 @@ export class ApiClient {
 
     return this.handleResponse<T>(response);
   }
+
+  async patch<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: RequestInit
+  ): Promise<T> {
+    const token = this.getToken();
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      ...options,
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options?.headers,
+      },
+      body: data ? JSON.stringify(data) : undefined,
+    });
+
+    return this.handleResponse<T>(response);
+  }
 }
 
 export const apiClient = new ApiClient();

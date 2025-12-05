@@ -13,6 +13,8 @@ interface BackendGenerateResponse {
   message: string;
   data: {
     postId: string;
+    versionId: string;
+    versionNumber: number;
     generatedText: string;
     usage: {
       promptTokens: number;
@@ -59,6 +61,10 @@ function normalizeGeneratedPost(
     goal: request.goal,
     rawIdea: request.rawIdea,
     createdAt: new Date().toISOString(),
+    // Version tracking
+    versionId: backendData.versionId,
+    versionNumber: backendData.versionNumber,
+    totalVersions: 1, // Initial generation always creates version 1
   };
 }
 
