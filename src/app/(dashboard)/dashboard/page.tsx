@@ -18,7 +18,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader } from "@/components/layout/page-header";
 import {
   Sparkles,
   User,
@@ -27,8 +26,9 @@ import {
   FileText,
   Plus,
   ArrowRight,
+  Zap,
 } from "lucide-react";
-import { APP_NAME, ROUTES } from "@/config/constants";
+import { ROUTES } from "@/config/constants";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -38,10 +38,8 @@ export default function DashboardPage() {
   const { posts, isLoading: postsLoading, pagination } = usePosts();
   const { openOnboarding, isOpen: isOnboardingOpen } = useOnboardingContext();
 
-  // Get up to 3 most recent posts for dashboard preview
   const recentPosts = posts.slice(0, 3);
 
-  // Check if we should show onboarding when data is loaded
   const isDataLoaded = !profilesLoading && !projectsLoading && !postsLoading;
 
   useEffect(() => {
@@ -55,7 +53,14 @@ export default function DashboardPage() {
         openOnboarding();
       }
     }
-  }, [isDataLoaded, profiles.length, projects.length, pagination.totalItems, openOnboarding, isOnboardingOpen]);
+  }, [
+    isDataLoaded,
+    profiles.length,
+    projects.length,
+    pagination.totalItems,
+    openOnboarding,
+    isOnboardingOpen,
+  ]);
 
   const stats = [
     {
@@ -88,31 +93,109 @@ export default function DashboardPage() {
     },
   ];
 
+  const quickActions = [
+    {
+      label: "Create Profile",
+      description: "Set up your personal brand identity",
+      icon: User,
+      href: `${ROUTES.PROFILES}/new`,
+    },
+    {
+      label: "Add Project",
+      description: "Showcase your work and achievements",
+      icon: Briefcase,
+      href: `${ROUTES.PROJECTS}/new`,
+    },
+    {
+      label: "Configure Platform",
+      description: "Connect your social media accounts",
+      icon: Share2,
+      href: `${ROUTES.PLATFORMS}/new`,
+    },
+  ];
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const getUserName = () => {
+    if (!user?.email) return "";
+    const name = user.email.split("@")[0];
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  };
+
   return (
     <div className="space-y-8">
-      <PageHeader
-        title="Dashboard"
-        description={`Welcome back to ${APP_NAME}${user?.email ? `, ${user.email}` : ""}`}
-      />
+      {/* Welcome Section */}
+      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-primary/10 via-primary/5 to-transparent border border-primary/10 p-6 md:p-8">
+        <div className="absolute top-0 right-0 -mt-16 -mr-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute bottom-0 left-0 -mb-16 -ml-16 h-48 w-48 rounded-full bg-primary/5 blur-2xl" />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-sm font-medium text-primary">Dashboard</span>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+              {getGreeting()}
+              {getUserName() && `, ${getUserName()}`}
+            </h1>
+            <p className="text-muted-foreground max-w-lg">
+              Ready to create engaging content? Start by generating a new post
+              or manage your existing profiles and projects.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              size="lg"
+              className="gap-2 shadow-lg shadow-primary/20"
+              asChild
+            >
+              <Link href={ROUTES.GENERATE}>
+                <Zap className="h-4 w-4" />
+                Generate Content
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Link key={stat.label} href={stat.href}>
-              <Card className="transition-colors hover:bg-muted/50">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {stat.label}
-                  </CardTitle>
-                  <Icon className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  {stat.isLoading ? (
-                    <Skeleton className="h-8 w-12" />
-                  ) : (
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                  )}
+            <Link key={stat.label} href={stat.href} className="group">
+              <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-muted-foreground">
+                        {stat.label}
+                      </p>
+                      {stat.isLoading ? (
+                        <Skeleton className="h-9 w-16" />
+                      ) : (
+                        <p className="text-3xl font-bold tracking-tight">
+                          {stat.value}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-transform duration-300 group-hover:scale-110">
+                      <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground">
+                    <span>View all {stat.label.toLowerCase()}</span>
+                    <ArrowRight className="ml-auto h-3 w-3 transition-transform duration-300 group-hover:translate-x-1" />
+                  </div>
                 </CardContent>
               </Card>
             </Link>
@@ -120,64 +203,96 @@ export default function DashboardPage() {
         })}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Get started with your personal branding
-            </CardDescription>
+      {/* Main Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-5">
+        {/* Quick Actions */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                <Plus className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Quick Actions</CardTitle>
+                <CardDescription className="text-xs">
+                  Get started with your personal brand
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="grid gap-2">
-            <Button variant="outline" className="justify-start" asChild>
-              <Link href={`${ROUTES.PROFILES}/new`}>
-                <Plus className="mr-2 h-4 w-4" />
-                Create a Profile
-              </Link>
-            </Button>
-            <Button variant="outline" className="justify-start" asChild>
-              <Link href={`${ROUTES.PROJECTS}/new`}>
-                <Briefcase className="mr-2 h-4 w-4" />
-                Add a Project
-              </Link>
-            </Button>
-            <Button variant="outline" className="justify-start" asChild>
-              <Link href={`${ROUTES.PLATFORMS}/new`}>
-                <Share2 className="mr-2 h-4 w-4" />
-                Configure a Platform
-              </Link>
-            </Button>
-            <Button className="justify-start" asChild>
-              <Link href={ROUTES.GENERATE}>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Generate Content
-              </Link>
-            </Button>
+          <CardContent className="space-y-3">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <Link
+                  key={action.label}
+                  href={action.href}
+                  className="group flex items-center gap-4 rounded-xl border border-transparent bg-muted/50 p-4 transition-all duration-200 hover:border-border hover:bg-muted"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                    <Icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm">{action.label}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {action.description}
+                    </p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-foreground" />
+                </Link>
+              );
+            })}
+
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                className="w-full gap-2 border-dashed"
+                asChild
+              >
+                <Link href={ROUTES.GENERATE}>
+                  <Sparkles className="h-4 w-4" />
+                  Generate your first post
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Posts</CardTitle>
-              <CardDescription>Your latest generated content</CardDescription>
+        {/* Recent Posts */}
+        <Card className="lg:col-span-3">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  <FileText className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Recent Posts</CardTitle>
+                  <CardDescription className="text-xs">
+                    Your latest generated content
+                  </CardDescription>
+                </div>
+              </div>
+              {recentPosts.length > 0 && (
+                <Button variant="ghost" size="sm" className="gap-1" asChild>
+                  <Link href={ROUTES.POSTS}>
+                    View all
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </Button>
+              )}
             </div>
-            {recentPosts.length > 0 && (
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={ROUTES.POSTS}>
-                  View all
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
-              </Button>
-            )}
           </CardHeader>
           <CardContent>
             {postsLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <Skeleton className="h-10 w-10 rounded" />
-                    <div className="flex-1 space-y-1">
+                  <div
+                    key={i}
+                    className="flex items-start gap-4 rounded-xl bg-muted/50 p-4"
+                  >
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-3 w-1/2" />
                     </div>
@@ -185,14 +300,20 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : recentPosts.length === 0 ? (
-              <div className="flex h-32 flex-col items-center justify-center rounded-md border border-dashed">
-                <FileText className="mb-2 h-8 w-8 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">
-                  No posts generated yet
+              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-muted-foreground/25 bg-muted/20 py-12 px-6 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-4">
+                  <FileText className="h-8 w-8 text-primary/50" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-1">
+                  No posts yet
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4 max-w-xs">
+                  Start creating engaging content for your personal brand with
+                  AI-powered generation.
                 </p>
-                <Button variant="link" size="sm" className="mt-2" asChild>
+                <Button size="sm" className="gap-2" asChild>
                   <Link href={ROUTES.GENERATE}>
-                    <Sparkles className="mr-1 h-3 w-3" />
+                    <Sparkles className="h-4 w-4" />
                     Generate your first post
                   </Link>
                 </Button>
@@ -203,26 +324,39 @@ export default function DashboardPage() {
                   <Link
                     key={post.id}
                     href={`${ROUTES.POSTS}/${post.id}`}
-                    className="flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50"
+                    className="group flex items-start gap-4 rounded-xl bg-muted/50 p-4 transition-all duration-200 hover:bg-muted"
                   >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-primary/10">
-                      <FileText className="h-5 w-5 text-primary" />
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <FileText className="h-6 w-6 text-primary" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {post.content.length > 60
-                          ? `${post.content.substring(0, 60)}...`
+                      <p className="text-sm font-medium leading-relaxed line-clamp-2">
+                        {post.content.length > 100
+                          ? `${post.content.substring(0, 100)}...`
                           : post.content}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(post.createdAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                        {post.platform && ` · ${post.platform.name}`}
-                      </p>
+                      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>
+                          {new Date(post.createdAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            }
+                          )}
+                        </span>
+                        {post.platform && (
+                          <>
+                            <span className="text-muted-foreground/50">·</span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">
+                              {post.platform.name}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-foreground mt-1" />
                   </Link>
                 ))}
               </div>
