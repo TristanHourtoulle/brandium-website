@@ -165,7 +165,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
             </Button>
             <Separator orientation='vertical' className='h-6' />
             <div className='flex items-center gap-2'>
-              <div className='flex items-center justify-center h-8 w-8 rounded-lg bg-blue-600/10'>
+              <div className='flex items-center justify-center h-8 w-8 rounded-full bg-blue-600/10'>
                 <Wand2 className='h-4 w-4 text-blue-600' />
               </div>
               <div>
@@ -276,7 +276,7 @@ function PostDetailSkeleton() {
             <Skeleton className='h-9 w-20' />
             <Skeleton className='h-6 w-px' />
             <div className='flex items-center gap-2'>
-              <Skeleton className='h-8 w-8 rounded-lg' />
+              <Skeleton className='h-8 w-8 rounded-full' />
               <div>
                 <Skeleton className='h-4 w-24' />
                 <Skeleton className='h-3 w-32 mt-1' />
@@ -300,7 +300,7 @@ function PostDetailSkeleton() {
         </div>
         <div className='flex-1 flex items-center justify-center'>
           <div className='text-center space-y-4'>
-            <Skeleton className='h-16 w-16 rounded-2xl mx-auto' />
+            <Skeleton className='h-16 w-16 rounded-full mx-auto' />
             <Skeleton className='h-6 w-48 mx-auto' />
             <Skeleton className='h-4 w-64 mx-auto' />
           </div>

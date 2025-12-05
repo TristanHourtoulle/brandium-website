@@ -29,7 +29,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarGroup,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const platformNavItems = [
   {
@@ -75,20 +81,49 @@ const secondaryNavItems = [
   },
 ];
 
+function GenerateButton() {
+  const { state, isMobile } = useSidebar();
+  const isCollapsed = state === "collapsed" && !isMobile;
+
+  const button = (
+    <Button
+      asChild
+      className="w-full justify-center gap-2 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
+      size={isCollapsed ? "icon" : "lg"}
+    >
+      <Link href={ROUTES.GENERATE}>
+        <Wand2 className="size-4" />
+        {!isCollapsed && <span className="font-semibold">Generate Post</span>}
+      </Link>
+    </Button>
+  );
+
+  if (isCollapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent side="right">Generate Post</TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return button;
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, logout } = useAuth();
 
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar variant="inset" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton size="lg" asChild tooltip={APP_NAME}>
               <a href={ROUTES.DASHBOARD}>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0 group-data-[collapsible=icon]:size-4 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:text-sidebar-foreground">
                   <Sparkles className="size-4" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                   <span className="truncate font-semibold">{APP_NAME}</span>
                   <span className="truncate text-xs text-muted-foreground">
                     Personal Branding
@@ -101,17 +136,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         {/* CTA Button - Main Feature */}
-        <SidebarGroup className="px-3 py-2">
-          <Button
-            asChild
-            className="w-full justify-center gap-2 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
-            size="lg"
-          >
-            <Link href={ROUTES.GENERATE}>
-              <Wand2 className="size-4" />
-              <span className="font-semibold">Generate Post</span>
-            </Link>
-          </Button>
+        <SidebarGroup className="px-3 py-2 group-data-[collapsible=icon]:px-2">
+          <GenerateButton />
         </SidebarGroup>
 
         <NavMain items={platformNavItems} label="Platform" />

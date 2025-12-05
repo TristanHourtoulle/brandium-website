@@ -143,7 +143,7 @@ export default function GeneratePage() {
       <div className='shrink-0 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60'>
         <div className='flex items-center justify-between px-6 pb-4'>
           <div className='flex items-center gap-3'>
-            <div className='flex items-center justify-center h-10 w-10 rounded-xl bg-blue-600/10'>
+            <div className='flex items-center justify-center h-10 w-10 rounded-full bg-blue-600/10'>
               <Sparkles className='h-5 w-5 text-blue-600' />
             </div>
             <div>

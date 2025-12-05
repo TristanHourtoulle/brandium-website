@@ -176,7 +176,7 @@ export function RefinementChat({
         </div>
 
         {/* Input */}
-        <div className='flex items-end gap-2 rounded-2xl border bg-background p-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-600/20 focus-within:border-blue-600'>
+        <div className='flex items-end gap-2 rounded-full border bg-background p-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-600/20 focus-within:border-blue-600'>
           <div className='flex items-center justify-center h-10 w-10 shrink-0'>
             <Wand2 className='h-5 w-5 text-blue-600' />
           </div>
@@ -195,7 +195,7 @@ export function RefinementChat({
             onClick={() => handleRefine(refinementInput)}
             disabled={!refinementInput.trim() || isIterating}
             className={cn(
-              'h-10 w-10 shrink-0 rounded-xl transition-all',
+              'h-10 w-10 shrink-0 rounded-full transition-all',
               refinementInput.trim() && !isIterating
                 ? 'bg-blue-600 hover:bg-blue-700 text-white'
                 : 'bg-muted text-muted-foreground'

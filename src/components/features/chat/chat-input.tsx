@@ -63,7 +63,7 @@ export function ChatInput({
 
   return (
     <div className={cn("relative", className)}>
-      <div className="flex items-end gap-2 rounded-2xl border bg-background p-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-600/20 focus-within:border-blue-600">
+      <div className="flex items-end gap-2 rounded-full border bg-background p-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-600/20 focus-within:border-blue-600">
         {/* Sparkles icon */}
         {showSparkles && (
           <div className="flex items-center justify-center h-10 w-10 shrink-0">
@@ -94,7 +94,7 @@ export function ChatInput({
           onClick={handleSubmit}
           disabled={!canSubmit}
           className={cn(
-            "h-10 w-10 shrink-0 rounded-xl transition-all",
+            "h-10 w-10 shrink-0 rounded-full transition-all",
             canSubmit
               ? "bg-blue-600 hover:bg-blue-700 text-white"
               : "bg-muted text-muted-foreground"
