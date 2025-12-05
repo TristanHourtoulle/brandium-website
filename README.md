@@ -112,6 +112,8 @@ src/
 ### AI Content Generation
 
 - **Post generation**: Generate personalized social media posts using AI
+- **Post iterations**: Refine and improve generated posts with natural language prompts (e.g., "make it shorter", "add emojis")
+- **Version history**: Browse and switch between all versions of a post
 - **Rate limiting**: Built-in rate limit tracking and display
 - **Post history**: View, filter, search, and manage all generated posts
 
