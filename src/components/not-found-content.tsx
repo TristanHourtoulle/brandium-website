@@ -5,13 +5,34 @@ import { FileQuestion, Home, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES, APP_NAME } from "@/config/constants";
 import { useAuth } from "@/lib/hooks/use-auth";
-import { Sidebar } from "@/components/layout/sidebar";
-import { MobileNav } from "@/components/layout/mobile-nav";
+import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
-function NotFoundMessage({ showDashboardLayout }: { showDashboardLayout: boolean }) {
+function NotFoundMessage({
+  showDashboardLayout,
+}: {
+  showDashboardLayout: boolean;
+}) {
   return (
-    <div className={showDashboardLayout ? "flex flex-col items-center justify-center min-h-[calc(100vh-(--spacing(24)))]" : "flex min-h-screen flex-col items-center justify-center px-4"}>
+    <div
+      className={
+        showDashboardLayout
+          ? "flex flex-col items-center justify-center min-h-[calc(100vh-5rem)]"
+          : "flex min-h-screen flex-col items-center justify-center px-4"
+      }
+    >
       <div className="text-center">
         <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
           <FileQuestion className="h-10 w-10 text-primary" />
@@ -62,17 +83,28 @@ export function NotFoundContent() {
 
   if (isAuthenticated) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
-          <Sidebar />
-        </aside>
-        <div className="flex flex-1 flex-col lg:pl-64">
-          <MobileNav />
-          <main className="flex-1 px-4 py-6 lg:px-8">
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex flex-col shrink-0">
+            <div className="flex h-16 items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Not Found</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            <Separator className="w-full" />
+          </header>
+          <main className="flex flex-1 flex-col gap-4 p-4 pt-0">
             <NotFoundMessage showDashboardLayout={true} />
           </main>
-        </div>
-      </div>
+        </SidebarInset>
+      </SidebarProvider>
     );
   }
 
