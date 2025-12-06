@@ -26,26 +26,42 @@ import type { PostIdea } from '@/types/idea';
 function GeneratePageSkeleton() {
   return (
     <div className='h-[calc(100vh-4rem)] flex flex-col'>
-      <div className='shrink-0 border-b bg-background/95 backdrop-blur p-6'>
+      {/* Header skeleton */}
+      <div className='shrink-0 border-b bg-background/95 backdrop-blur p-4 md:p-6'>
         <div className='flex items-center gap-3'>
-          <Skeleton className='h-10 w-10 rounded-full' />
+          <Skeleton className='h-10 w-10 rounded-full animate-pulse' />
           <div className='space-y-2'>
-            <Skeleton className='h-5 w-40' />
-            <Skeleton className='h-4 w-60' />
+            <Skeleton className='h-5 w-32 md:w-40 animate-pulse' />
+            <Skeleton className='h-4 w-48 md:w-60 animate-pulse' />
           </div>
         </div>
       </div>
-      <div className='flex-1 flex'>
-        <div className='w-80 border-r p-4 space-y-4'>
-          <Skeleton className='h-10 w-full' />
-          <Skeleton className='h-10 w-full' />
-          <Skeleton className='h-10 w-full' />
+      {/* Main content skeleton - responsive */}
+      <div className='flex-1 flex flex-col lg:flex-row'>
+        {/* Config sidebar skeleton */}
+        <div className='w-full lg:w-80 border-b lg:border-b-0 lg:border-r p-4 space-y-4 bg-muted/30'>
+          <div className='space-y-2'>
+            <Skeleton className='h-4 w-16 animate-pulse' />
+            <Skeleton className='h-10 w-full animate-pulse' />
+          </div>
+          <div className='space-y-2'>
+            <Skeleton className='h-4 w-16 animate-pulse' />
+            <Skeleton className='h-10 w-full animate-pulse' />
+          </div>
+          <div className='space-y-2'>
+            <Skeleton className='h-4 w-16 animate-pulse' />
+            <Skeleton className='h-10 w-full animate-pulse' />
+          </div>
         </div>
-        <div className='flex-1 p-8 flex items-center justify-center'>
+        {/* Chat area skeleton */}
+        <div className='flex-1 p-6 md:p-8 flex items-center justify-center'>
           <div className='text-center space-y-4'>
-            <Skeleton className='h-12 w-12 rounded-full mx-auto' />
-            <Skeleton className='h-6 w-48 mx-auto' />
-            <Skeleton className='h-4 w-64 mx-auto' />
+            <div className='relative mx-auto w-fit'>
+              <Skeleton className='h-16 w-16 rounded-full animate-pulse' />
+              <div className='absolute inset-0 rounded-full bg-primary/5 animate-ping' />
+            </div>
+            <Skeleton className='h-6 w-40 md:w-48 mx-auto animate-pulse' />
+            <Skeleton className='h-4 w-56 md:w-64 mx-auto animate-pulse' />
           </div>
         </div>
       </div>
@@ -182,14 +198,14 @@ function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProp
     <div className='h-[calc(100vh-4rem)] flex flex-col'>
       {/* Header */}
       <div className='shrink-0 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60'>
-        <div className='flex items-center justify-between px-6 pb-4'>
+        <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 md:px-6 pb-4'>
           <div className='flex items-center gap-3'>
-            <div className='flex items-center justify-center h-10 w-10 rounded-full bg-blue-600/10'>
-              <Sparkles className='h-5 w-5 text-blue-600' />
+            <div className='flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 transition-transform duration-200 hover:scale-105'>
+              <Sparkles className='h-5 w-5 text-primary' />
             </div>
             <div>
               <h1 className='text-lg font-semibold'>AI Content Generator</h1>
-              <p className='text-sm text-muted-foreground'>
+              <p className='text-sm text-muted-foreground/90'>
                 {idea ? `Creating post from idea: ${idea.title}` : 'Chat with AI to create personalized posts'}
               </p>
             </div>
@@ -198,10 +214,10 @@ function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProp
         </div>
       </div>
 
-      {/* Main content */}
-      <div className='flex-1 flex min-h-0 overflow-hidden'>
-        {/* Left sidebar - Configuration */}
-        <div className='w-80 shrink-0 border-r overflow-y-auto bg-muted/30'>
+      {/* Main content - responsive layout */}
+      <div className='flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden'>
+        {/* Left sidebar - Configuration - collapsible on mobile */}
+        <div className='w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r overflow-y-auto bg-muted/30 max-h-[35vh] lg:max-h-none transition-all duration-300'>
           <GenerationConfig
             profiles={profiles}
             projects={projects}
@@ -245,10 +261,10 @@ function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProp
 
         {/* Right sidebar - Generated content actions (when available) */}
         {generatedPost && (
-          <div className='w-72 shrink-0 border-l overflow-y-auto bg-muted/30 p-4'>
-            <Card className='p-4 space-y-4'>
+          <div className='w-full lg:w-72 shrink-0 border-t lg:border-t-0 lg:border-l overflow-y-auto bg-muted/30 p-4 animate-in slide-in-from-right-5 duration-300'>
+            <Card className='p-4 space-y-4 transition-all duration-200 hover:shadow-md'>
               <div className='flex items-center gap-2'>
-                <Sparkles className='h-4 w-4 text-blue-600' />
+                <Sparkles className='h-4 w-4 text-primary' />
                 <h3 className='font-medium text-sm'>Generated Post</h3>
               </div>
 
@@ -257,7 +273,7 @@ function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProp
                 <Badge variant='secondary' className='text-xs'>
                   {selectedPlatform.name}
                   {selectedPlatform.maxLength && (
-                    <span className='ml-1 text-muted-foreground'>
+                    <span className='ml-1 text-muted-foreground/80'>
                       ({generatedPost.content.length}/
                       {selectedPlatform.maxLength})
                     </span>
@@ -267,13 +283,13 @@ function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProp
 
               {/* Historical posts context */}
               {generationContext?.historicalPostsUsed !== undefined && generationContext.historicalPostsUsed > 0 && (
-                <Badge variant='outline' className='text-xs text-blue-600 border-blue-600/50'>
+                <Badge variant='outline' className='text-xs text-primary border-primary/50'>
                   Style matched from {generationContext.historicalPostsUsed} post{generationContext.historicalPostsUsed !== 1 ? 's' : ''}
                 </Badge>
               )}
 
               {/* Character count */}
-              <p className='text-xs text-muted-foreground'>
+              <p className='text-xs text-muted-foreground/90'>
                 {generatedPost.content.length} characters
               </p>
 
@@ -282,7 +298,7 @@ function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProp
                 <Button
                   variant='outline'
                   size='sm'
-                  className='w-full justify-start'
+                  className='w-full justify-start transition-all duration-200'
                   onClick={handleCopy}
                   disabled={copied}
                 >
@@ -301,7 +317,7 @@ function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProp
 
                 <Button
                   size='sm'
-                  className='w-full justify-start bg-blue-600 hover:bg-blue-700'
+                  className='w-full justify-start'
                   onClick={handleViewPost}
                 >
                   <ExternalLink className='h-4 w-4 mr-2' />
