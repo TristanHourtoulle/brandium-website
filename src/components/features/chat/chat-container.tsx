@@ -45,13 +45,19 @@ export function ChatContainer({
   defaultInputValue,
 }: ChatContainerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
+  // Using scrollTop instead of scrollIntoView to prevent page-level scrolling
   useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
+
     // Use requestAnimationFrame to ensure DOM is updated before scrolling
     requestAnimationFrame(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: "smooth",
+      });
     });
   }, [messages, isLoading]);
 
@@ -105,8 +111,6 @@ export function ChatContainer({
                 isLoading={true}
               />
             )}
-
-            <div ref={messagesEndRef} />
           </div>
         )}
       </div>
