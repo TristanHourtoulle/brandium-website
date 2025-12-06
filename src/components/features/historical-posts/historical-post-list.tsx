@@ -179,9 +179,10 @@ export function HistoricalPostList({
           Bulk Import
         </Button>
         <Button
-          variant="secondary"
+          variant={canAnalyze ? "default" : "secondary"}
           onClick={onAnalyzeClick}
           disabled={!canAnalyze || isAnalyzing}
+          className={canAnalyze && !isAnalyzing ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}
         >
           {isAnalyzing ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -190,9 +191,13 @@ export function HistoricalPostList({
           )}
           Analyze Style
         </Button>
-        {!canAnalyze && stats && stats.totalPosts < 5 && (
+        {!canAnalyze && stats && stats.totalPosts < 5 ? (
           <span className="text-sm text-muted-foreground">
             {5 - stats.totalPosts} more post{5 - stats.totalPosts !== 1 ? "s" : ""} needed
+          </span>
+        ) : canAnalyze && (
+          <span className="text-sm text-muted-foreground">
+            Uses your {stats && stats.totalPosts > 20 ? "20 most recent" : stats?.totalPosts} posts
           </span>
         )}
       </div>
