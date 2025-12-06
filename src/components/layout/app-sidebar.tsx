@@ -19,6 +19,7 @@ import { APP_NAME, ROUTES } from "@/config/constants";
 import { NavMain } from "./nav-main";
 import { NavProjects } from "./nav-projects";
 import { NavSecondary } from "./nav-secondary";
+import { NavTheme } from "./nav-theme";
 import { NavUser } from "./nav-user";
 import { Button } from "@/components/ui/button";
 import {
@@ -151,6 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={secondaryNavItems} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
+        <NavTheme />
         {user && (
           <NavUser
             user={{ email: user.email }}

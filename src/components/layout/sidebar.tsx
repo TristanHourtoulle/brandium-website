@@ -25,6 +25,7 @@ import {
   LogOut,
   ChevronDown,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const navItems = [
   { href: ROUTES.DASHBOARD, icon: LayoutDashboard, label: "Dashboard" },
@@ -64,8 +65,12 @@ export function Sidebar() {
         </nav>
       </ScrollArea>
 
-      {/* User Menu */}
-      <div className="border-t p-4">
+      {/* Theme Toggle & User Menu */}
+      <div className="border-t p-4 space-y-2">
+        <div className="flex items-center justify-between px-2">
+          <span className="text-sm text-muted-foreground">Theme</span>
+          <ThemeToggle />
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

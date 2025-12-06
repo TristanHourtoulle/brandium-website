@@ -1,6 +1,8 @@
 "use client";
 
-import { ChevronsUpDown, LogOut, User } from "lucide-react";
+import { ChevronsUpDown, LogOut, User, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import * as React from "react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -28,6 +30,18 @@ interface NavUserProps {
 
 export function NavUser({ user, onLogout }: NavUserProps) {
   const { isMobile } = useSidebar();
+  const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && resolvedTheme === "dark";
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  };
 
   const userInitials = user.name
     ? user.name.substring(0, 2).toUpperCase()
@@ -80,6 +94,26 @@ export function NavUser({ user, onLogout }: NavUserProps) {
                 </div>
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
+              <div className="relative mr-2 h-4 w-4 overflow-hidden">
+                <Sun
+                  className={`absolute h-4 w-4 transition-all duration-500 ease-in-out ${
+                    isDark
+                      ? "rotate-90 scale-0 opacity-0"
+                      : "rotate-0 scale-100 opacity-100"
+                  }`}
+                />
+                <Moon
+                  className={`absolute h-4 w-4 transition-all duration-500 ease-in-out ${
+                    isDark
+                      ? "rotate-0 scale-100 opacity-100"
+                      : "-rotate-90 scale-0 opacity-0"
+                  }`}
+                />
+              </div>
+              {isDark ? "Light mode" : "Dark mode"}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onLogout} className="text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
