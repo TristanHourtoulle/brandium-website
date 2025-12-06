@@ -112,6 +112,28 @@ Projects help organize content around specific topics or campaigns:
 - Maintain context for specific products/services
 - Track content themes over time
 
+#### Post Ideas
+
+Generate and manage content ideas with AI assistance:
+
+| Feature | Description |
+|---------|-------------|
+| **AI-Powered Generation** | Generate multiple post ideas based on profile, project, and platform |
+| **Priority Levels** | Set high, medium, or low priority for each idea |
+| **Status Tracking** | Track ideas from draft to published status |
+| **Auto-Fill Generate** | Convert ideas directly into post generation with context |
+| **Custom Context** | Add specific context or themes for idea generation |
+
+**Workflow:**
+
+1. Select your profile, project, and platform
+2. Optionally add custom context or themes
+3. Generate multiple ideas with AI
+4. Review, edit, and prioritize ideas
+5. Convert selected ideas into full posts
+
+---
+
 #### Historical Posts
 
 Import your past social media posts to help AI learn your authentic writing style:
@@ -501,6 +523,10 @@ app/
     ├── posts/
     │   ├── page.tsx           # Post history
     │   └── [id]/page.tsx      # Post detail
+    ├── ideas/
+    │   ├── page.tsx           # Ideas list
+    │   ├── new/page.tsx       # Generate new ideas
+    │   └── [id]/page.tsx      # Idea detail
     └── generate/page.tsx      # Post generation
 ```
 
@@ -597,6 +623,7 @@ src/
 │       ├── projects/           # Project management
 │       ├── platforms/          # Platform management
 │       ├── posts/              # Post history
+│       ├── ideas/              # Post ideas management
 │       └── generate/           # Post generation
 │
 ├── components/
@@ -607,6 +634,7 @@ src/
 │   │   ├── projects/           # Project components
 │   │   ├── platforms/          # Platform components
 │   │   ├── posts/              # Post components
+│   │   ├── ideas/              # Post ideas components
 │   │   ├── generate/           # Generation components
 │   │   ├── historical-posts/   # Historical posts components
 │   │   ├── profile-analysis/   # Analysis components
@@ -729,6 +757,17 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 | GET | `/api/posts` | List all generated posts |
 | GET | `/api/posts/:id` | Get post details |
 | DELETE | `/api/posts/:id` | Delete post |
+
+#### Idea Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/ideas` | List all ideas |
+| POST | `/api/ideas` | Create idea |
+| GET | `/api/ideas/:id` | Get idea details |
+| PATCH | `/api/ideas/:id` | Update idea |
+| DELETE | `/api/ideas/:id` | Delete idea |
+| POST | `/api/ideas/generate` | Generate ideas with AI |
 
 #### Generation Endpoints
 
