@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useProfiles } from '@/lib/hooks/use-profiles';
 import { useProjects } from '@/lib/hooks/use-projects';
 import { usePlatforms } from '@/lib/hooks/use-platforms';
 import { useGenerate } from '@/lib/hooks/use-generate';
+import { usePostIdea } from '@/lib/hooks/use-post-ideas';
 import { ChatContainer, type Message } from '@/components/features/chat';
 import {
   RateLimitStatusDisplay,
@@ -14,12 +15,51 @@ import {
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Sparkles, Copy, Check, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/lib/utils/format';
 import { ROUTES } from '@/config/constants';
+import type { PostIdea } from '@/types/idea';
 
-export default function GeneratePage() {
+// Loading skeleton for when idea is loading
+function GeneratePageSkeleton() {
+  return (
+    <div className='h-[calc(100vh-4rem)] flex flex-col'>
+      <div className='shrink-0 border-b bg-background/95 backdrop-blur p-6'>
+        <div className='flex items-center gap-3'>
+          <Skeleton className='h-10 w-10 rounded-full' />
+          <div className='space-y-2'>
+            <Skeleton className='h-5 w-40' />
+            <Skeleton className='h-4 w-60' />
+          </div>
+        </div>
+      </div>
+      <div className='flex-1 flex'>
+        <div className='w-80 border-r p-4 space-y-4'>
+          <Skeleton className='h-10 w-full' />
+          <Skeleton className='h-10 w-full' />
+          <Skeleton className='h-10 w-full' />
+        </div>
+        <div className='flex-1 p-8 flex items-center justify-center'>
+          <div className='text-center space-y-4'>
+            <Skeleton className='h-12 w-12 rounded-full mx-auto' />
+            <Skeleton className='h-6 w-48 mx-auto' />
+            <Skeleton className='h-4 w-64 mx-auto' />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Inner component that receives initialized values via key remounting
+interface GeneratePageContentProps {
+  idea: PostIdea | null;
+  defaultProfileId: string;
+}
+
+function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProps) {
   const router = useRouter();
   const { profiles, isLoading: profilesLoading } = useProfiles();
   const { projects, isLoading: projectsLoading } = useProjects();
@@ -35,26 +75,27 @@ export default function GeneratePage() {
     regenerate,
   } = useGenerate();
 
-  // Configuration state - initialize with first profile if available
-  const [selectedProfileId, setSelectedProfileId] = useState<string>('');
-  const [selectedProjectId, setSelectedProjectId] = useState<
-    string | undefined
-  >();
-  const [selectedPlatformId, setSelectedPlatformId] = useState<
-    string | undefined
-  >();
-  const [goal, setGoal] = useState<string>('');
-  const [hasInitializedProfile, setHasInitializedProfile] = useState(false);
+  // Configuration state - initialized from idea or defaults
+  // Using function initializer ensures this only runs once on mount
+  const [selectedProfileId, setSelectedProfileId] = useState<string>(() =>
+    idea?.profile?.id ?? defaultProfileId
+  );
+  const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(() =>
+    idea?.project?.id
+  );
+  const [selectedPlatformId, setSelectedPlatformId] = useState<string | undefined>(() =>
+    idea?.platform?.id
+  );
+  const [goal, setGoal] = useState<string>(() =>
+    idea?.suggestedGoal ?? ''
+  );
 
-  // Chat messages state
+  // Chat messages state - starts empty, user will send the pre-filled message
   const [messages, setMessages] = useState<Message[]>([]);
   const [copied, setCopied] = useState(false);
 
-  // Set default profile when profiles load (only once)
-  if (profiles.length > 0 && !selectedProfileId && !hasInitializedProfile) {
-    setHasInitializedProfile(true);
-    setSelectedProfileId(profiles[0].id);
-  }
+  // Compute the default input value from idea (title + description)
+  const defaultInputValue = idea ? `${idea.title}\n\n${idea.description}` : undefined;
 
   const handleSendMessage = useCallback(
     async (message: string) => {
@@ -135,8 +176,7 @@ export default function GeneratePage() {
   };
 
   const selectedPlatform = platforms.find((p) => p.id === selectedPlatformId);
-  const canGenerate =
-    selectedProfileId && profiles.length > 0 && !isRateLimited;
+  const canGenerate = selectedProfileId && profiles.length > 0 && !isRateLimited;
 
   return (
     <div className='h-[calc(100vh-4rem)] flex flex-col'>
@@ -150,7 +190,7 @@ export default function GeneratePage() {
             <div>
               <h1 className='text-lg font-semibold'>AI Content Generator</h1>
               <p className='text-sm text-muted-foreground'>
-                Chat with AI to create personalized posts
+                {idea ? `Creating post from idea: ${idea.title}` : 'Chat with AI to create personalized posts'}
               </p>
             </div>
           </div>
@@ -199,6 +239,7 @@ export default function GeneratePage() {
             onRegenerateMessage={handleRegenerate}
             isRegenerating={isGenerating}
             disabled={!canGenerate}
+            defaultInputValue={defaultInputValue}
           />
         </div>
 
@@ -272,5 +313,33 @@ export default function GeneratePage() {
         )}
       </div>
     </div>
+  );
+}
+
+// Main page component that handles loading states and passes data
+export default function GeneratePage() {
+  const searchParams = useSearchParams();
+  const ideaId = searchParams.get('ideaId');
+  const { profiles, isLoading: profilesLoading } = useProfiles();
+  const { idea, isLoading: ideaLoading } = usePostIdea(ideaId);
+
+  // Show skeleton while loading idea or profiles (needed for default)
+  if (ideaId && ideaLoading) {
+    return <GeneratePageSkeleton />;
+  }
+
+  if (profilesLoading) {
+    return <GeneratePageSkeleton />;
+  }
+
+  const defaultProfileId = profiles.length > 0 ? profiles[0].id : '';
+
+  // Use key to force remount when ideaId changes, ensuring state is re-initialized
+  return (
+    <GeneratePageContent
+      key={ideaId ?? 'no-idea'}
+      idea={idea}
+      defaultProfileId={defaultProfileId}
+    />
   );
 }
