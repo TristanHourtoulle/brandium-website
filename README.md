@@ -108,10 +108,13 @@ src/
 - **Profile management**: Create and manage personal brand profiles with tone, voice guidelines, and rules
 - **Platform management**: Configure social media platforms with style guidelines and character limits
 - **Project management**: Organize content around specific topics, products, or campaigns
+- **Historical posts**: Import past social media posts to help AI learn your writing style
 
 ### AI Content Generation
 
 - **Post generation**: Generate personalized social media posts using AI
+- **Style matching**: AI learns from your historical posts to match your unique writing style
+- **Profile analysis**: Analyze your historical posts to automatically extract tone, do/don't rules
 - **Post iterations**: Refine and improve generated posts with natural language prompts (e.g., "make it shorter", "add emojis")
 - **Version history**: Browse and switch between all versions of a post
 - **Rate limiting**: Built-in rate limit tracking and display
