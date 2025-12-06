@@ -38,9 +38,15 @@ export function IdeaList({
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, index) => (
-          <IdeaCardSkeleton key={index} />
+          <div
+            key={index}
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
+            <IdeaCardSkeleton />
+          </div>
         ))}
       </div>
     );
@@ -48,26 +54,33 @@ export function IdeaList({
 
   if (ideas.length === 0) {
     return (
-      <IdeaEmptyState
-        hasFilters={hasFilters}
-        onClearFilters={onClearFilters}
-        onGenerate={onGenerate}
-      />
+      <div className="animate-fade-in">
+        <IdeaEmptyState
+          hasFilters={hasFilters}
+          onClearFilters={onClearFilters}
+          onGenerate={onGenerate}
+        />
+      </div>
     );
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {ideas.map((idea) => (
-        <IdeaCard
+    <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {ideas.map((idea, index) => (
+        <div
           key={idea.id}
-          idea={idea}
-          onDelete={onDelete}
-          onUse={onUse}
-          isSelected={selectedIds.includes(idea.id)}
-          onToggleSelect={onToggleSelect}
-          showCheckbox={showCheckboxes}
-        />
+          className="animate-fade-in-up"
+          style={{ animationDelay: `${index * 50}ms` }}
+        >
+          <IdeaCard
+            idea={idea}
+            onDelete={onDelete}
+            onUse={onUse}
+            isSelected={selectedIds.includes(idea.id)}
+            onToggleSelect={onToggleSelect}
+            showCheckbox={showCheckboxes}
+          />
+        </div>
       ))}
     </div>
   );
