@@ -15,6 +15,7 @@ interface ChatInputProps {
   className?: string;
   minRows?: number;
   maxRows?: number;
+  defaultValue?: string;
 }
 
 export function ChatInput({
@@ -26,8 +27,9 @@ export function ChatInput({
   className,
   minRows = 1,
   maxRows = 5,
+  defaultValue = "",
 }: ChatInputProps) {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(defaultValue);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea

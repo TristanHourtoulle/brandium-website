@@ -8,3 +8,4 @@ export * from "./post";
 export * from "./iteration";
 export * from "./historical-post";
 export * from "./profile-analysis";
+export * from "./idea";

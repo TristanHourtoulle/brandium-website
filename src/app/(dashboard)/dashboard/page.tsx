@@ -7,6 +7,7 @@ import { useProfiles } from "@/lib/hooks/use-profiles";
 import { useProjects } from "@/lib/hooks/use-projects";
 import { usePlatforms } from "@/lib/hooks/use-platforms";
 import { usePosts } from "@/lib/hooks/use-posts";
+import { usePostIdeas } from "@/lib/hooks/use-post-ideas";
 import { useOnboardingContext } from "@/lib/providers/onboarding-provider";
 import { shouldShowOnboarding } from "@/lib/services/onboarding";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import {
   Plus,
   ArrowRight,
   Zap,
+  Lightbulb,
 } from "lucide-react";
 import { ROUTES } from "@/config/constants";
 
@@ -36,6 +38,7 @@ export default function DashboardPage() {
   const { projects, isLoading: projectsLoading } = useProjects();
   const { platforms, isLoading: platformsLoading } = usePlatforms();
   const { posts, isLoading: postsLoading, pagination } = usePosts();
+  const { isLoading: ideasLoading, pagination: ideasPagination } = usePostIdeas();
   const { openOnboarding, isOpen: isOnboardingOpen } = useOnboardingContext();
 
   const recentPosts = posts.slice(0, 3);
@@ -83,6 +86,13 @@ export default function DashboardPage() {
       icon: Share2,
       href: ROUTES.PLATFORMS,
       isLoading: platformsLoading,
+    },
+    {
+      label: "Ideas",
+      value: ideasPagination.totalItems,
+      icon: Lightbulb,
+      href: ROUTES.IDEAS,
+      isLoading: ideasLoading,
     },
     {
       label: "Posts",
@@ -168,7 +178,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (

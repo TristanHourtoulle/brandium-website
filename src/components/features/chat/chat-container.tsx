@@ -4,7 +4,6 @@ import { useRef, useEffect } from "react";
 import { cn } from "@/lib/utils/cn";
 import { ChatMessage } from "./chat-message";
 import { ChatInput } from "./chat-input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bot, Sparkles } from "lucide-react";
 
 export interface Message {
@@ -27,6 +26,7 @@ interface ChatContainerProps {
   disabled?: boolean;
   className?: string;
   headerContent?: React.ReactNode;
+  defaultInputValue?: string;
 }
 
 export function ChatContainer({
@@ -42,6 +42,7 @@ export function ChatContainer({
   disabled = false,
   className,
   headerContent,
+  defaultInputValue,
 }: ChatContainerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -68,7 +69,7 @@ export function ChatContainer({
       )}
 
       {/* Messages area */}
-      <ScrollArea ref={scrollRef} className="flex-1 min-h-0">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
         {messages.length === 0 ? (
           <EmptyState
             title={emptyStateTitle}
@@ -108,7 +109,7 @@ export function ChatContainer({
             <div ref={messagesEndRef} />
           </div>
         )}
-      </ScrollArea>
+      </div>
 
       {/* Input area - Fixed at bottom */}
       <div className="shrink-0 border-t bg-background p-4">
@@ -117,6 +118,7 @@ export function ChatContainer({
           placeholder={placeholder}
           isLoading={isLoading}
           disabled={disabled}
+          defaultValue={defaultInputValue}
         />
       </div>
     </div>
