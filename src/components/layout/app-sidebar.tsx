@@ -11,6 +11,7 @@ import {
   Share2,
   LifeBuoy,
   Send,
+  Lightbulb,
 } from "lucide-react";
 
 import { useAuth } from "@/lib/hooks/use-auth";
@@ -42,6 +43,11 @@ const platformNavItems = [
     title: "Dashboard",
     url: ROUTES.DASHBOARD,
     icon: LayoutDashboard,
+  },
+  {
+    title: "Ideas",
+    url: ROUTES.IDEAS,
+    icon: Lightbulb,
   },
   {
     title: "Posts",

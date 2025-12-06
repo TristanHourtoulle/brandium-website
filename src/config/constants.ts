@@ -12,6 +12,7 @@ export const ROUTES = {
   PLATFORMS: "/platforms",
   GENERATE: "/generate",
   POSTS: "/posts",
+  IDEAS: "/ideas",
 } as const;
 
 export const AUTH_TOKEN_KEY = "brandium_auth_token";
