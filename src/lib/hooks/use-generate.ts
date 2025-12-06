@@ -7,10 +7,12 @@ import type {
   GenerateRequest,
   GeneratedPost,
   RateLimitStatus,
+  GenerationContext,
 } from "@/types";
 
 interface UseGenerateReturn {
   generatedPost: GeneratedPost | null;
+  generationContext: GenerationContext | null;
   isGenerating: boolean;
   error: string | null;
   rateLimitStatus: RateLimitStatus | null;
@@ -23,6 +25,9 @@ interface UseGenerateReturn {
 
 export function useGenerate(): UseGenerateReturn {
   const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(
+    null
+  );
+  const [generationContext, setGenerationContext] = useState<GenerationContext | null>(
     null
   );
   const [isGenerating, setIsGenerating] = useState(false);
@@ -60,6 +65,7 @@ export function useGenerate(): UseGenerateReturn {
       try {
         const response = await generateApi.generatePost(request);
         setGeneratedPost(response.post);
+        setGenerationContext(response.context || null);
         setRateLimitStatus(response.rateLimit);
         lastRequestRef.current = request;
         toast.success("Content generated successfully!");
@@ -98,6 +104,7 @@ export function useGenerate(): UseGenerateReturn {
 
   const clear = useCallback(() => {
     setGeneratedPost(null);
+    setGenerationContext(null);
     setError(null);
     lastRequestRef.current = null;
   }, []);
@@ -133,6 +140,7 @@ export function useGenerate(): UseGenerateReturn {
 
   return {
     generatedPost,
+    generationContext,
     isGenerating,
     error,
     rateLimitStatus,

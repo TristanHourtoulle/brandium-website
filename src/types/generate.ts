@@ -27,7 +27,16 @@ export interface RateLimitStatus {
   resetAt: string;
 }
 
+/** Context information about what influenced the generation */
+export interface GenerationContext {
+  profile?: { id: string; name: string };
+  project?: { id: string; name: string };
+  platform?: { id: string; name: string };
+  historicalPostsUsed: number;
+}
+
 export interface GenerateResponse {
   post: GeneratedPost;
   rateLimit: RateLimitStatus;
+  context?: GenerationContext;
 }

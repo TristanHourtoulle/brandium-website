@@ -39,13 +39,14 @@ import {
   IterationDialog,
   VersionHistory,
 } from "@/components/features/iterations";
-import type { GeneratedPost, Profile, Project, Platform } from "@/types";
+import type { GeneratedPost, Profile, Project, Platform, GenerationContext } from "@/types";
 
 interface GenerationResultProps {
   post: GeneratedPost;
   profile?: Profile | null;
   project?: Project | null;
   platform?: Platform | null;
+  context?: GenerationContext | null;
   onRegenerate: () => void;
   onSave?: () => void;
   onDismiss: () => void;
@@ -59,6 +60,7 @@ export function GenerationResult({
   profile,
   project,
   platform,
+  context,
   onRegenerate,
   onSave,
   onDismiss,
@@ -168,6 +170,11 @@ export function GenerationResult({
             )}
             {platform && (
               <Badge variant="secondary">Platform: {platform.name}</Badge>
+            )}
+            {context?.historicalPostsUsed !== undefined && context.historicalPostsUsed > 0 && (
+              <Badge variant="outline" className="text-primary border-primary/50">
+                Style matched from {context.historicalPostsUsed} post{context.historicalPostsUsed !== 1 ? "s" : ""}
+              </Badge>
             )}
           </div>
         </CardHeader>
