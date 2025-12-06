@@ -165,3 +165,91 @@ export const postFiltersSchema = z.object({
 });
 
 export type PostFiltersFormData = z.infer<typeof postFiltersSchema>;
+
+// Historical Post validation schemas
+// Handle NaN from empty number inputs by transforming to undefined
+const optionalNonNegativeInt = z
+  .number()
+  .optional()
+  .transform((val) => (val === undefined || isNaN(val) ? undefined : val))
+  .pipe(z.number().int().nonnegative().optional());
+
+export const postEngagementSchema = z.object({
+  likes: optionalNonNegativeInt,
+  comments: optionalNonNegativeInt,
+  shares: optionalNonNegativeInt,
+  views: optionalNonNegativeInt,
+});
+
+export const postMetadataSchema = z
+  .object({
+    hashtags: z.array(z.string()).optional(),
+    mentions: z.array(z.string()).optional(),
+  })
+  .passthrough();
+
+export const historicalPostSchema = z.object({
+  content: z
+    .string()
+    .min(1, "Content is required")
+    .max(50000, "Content must be less than 50000 characters"),
+  platformId: z.string().uuid("Invalid platform ID").optional().nullable(),
+  // Accept datetime-local format (YYYY-MM-DDTHH:mm) and convert to ISO string
+  publishedAt: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => {
+      if (!val || val === "") return null;
+      // datetime-local gives us "YYYY-MM-DDTHH:mm", convert to ISO
+      const date = new Date(val);
+      return isNaN(date.getTime()) ? null : date.toISOString();
+    }),
+  externalUrl: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" ? null : val))
+    .pipe(z.string().url("Invalid URL").nullable()),
+  engagement: postEngagementSchema.optional().nullable(),
+  metadata: postMetadataSchema.optional().nullable(),
+});
+
+export type HistoricalPostFormData = z.infer<typeof historicalPostSchema>;
+
+export const bulkImportHistoricalPostsSchema = z.object({
+  posts: z
+    .array(historicalPostSchema)
+    .min(1, "At least one post is required")
+    .max(100, "Maximum 100 posts allowed per import"),
+});
+
+export type BulkImportFormData = z.infer<typeof bulkImportHistoricalPostsSchema>;
+
+export const historicalPostsQuerySchema = z.object({
+  page: z.number().int().positive().optional(),
+  limit: z.number().int().positive().max(100).optional(),
+  platformId: z.string().uuid("Invalid platform ID").optional(),
+  sortBy: z.enum(["publishedAt", "createdAt", "updatedAt"]).optional(),
+  order: z.enum(["ASC", "DESC"]).optional(),
+});
+
+export type HistoricalPostsQueryFormData = z.infer<typeof historicalPostsQuerySchema>;
+
+// Profile Analysis validation schemas
+export const applyAnalysisSchema = z.object({
+  toneTags: z
+    .array(z.string().min(1))
+    .min(1, "At least one tone tag is required")
+    .max(10, "Maximum 10 tone tags allowed"),
+  doRules: z.array(z.string().min(1)).max(20, "Maximum 20 do rules allowed"),
+  dontRules: z.array(z.string().min(1)).max(20, "Maximum 20 don't rules allowed"),
+});
+
+export type ApplyAnalysisFormData = z.infer<typeof applyAnalysisSchema>;
+
+export const analyzeFromPostsParamsSchema = z.object({
+  autoApply: z.boolean().optional(),
+  platformId: z.string().uuid("Invalid platform ID").optional(),
+  maxPosts: z.number().int().positive().max(50).optional(),
+});

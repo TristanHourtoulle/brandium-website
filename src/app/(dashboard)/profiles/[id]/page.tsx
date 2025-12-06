@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Trash2, Loader2 } from "lucide-react";
+import { ArrowLeft, Trash2, Loader2, FileText, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,21 +18,38 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileForm } from "@/components/forms/profile-form";
+import { HistoricalPostList } from "@/components/features/historical-posts";
+import { AnalysisReviewDialog } from "@/components/features/profile-analysis";
 import { useProfile, useProfiles } from "@/lib/hooks/use-profiles";
+import { useProfileAnalysis } from "@/lib/hooks/use-profile-analysis";
+import { useHistoricalPosts } from "@/lib/hooks/use-historical-posts";
 import { ROUTES } from "@/config/constants";
 import type { ProfileFormData } from "@/lib/utils/validation";
+import type { ApplyAnalysisDto } from "@/types";
 
 export default function EditProfilePage() {
   const router = useRouter();
   const params = useParams();
   const profileId = params.id as string;
 
-  const { profile, isLoading, error } = useProfile(profileId);
+  const { profile, isLoading, error, refetch: refetchProfile } = useProfile(profileId);
   const { updateProfile, deleteProfile } = useProfiles();
+  const { stats } = useHistoricalPosts(profileId);
+  const {
+    analysisResult,
+    isAnalyzing,
+    isApplying,
+    canAnalyze,
+    analyzeProfile,
+    applySuggestions,
+    clearAnalysisResult,
+  } = useProfileAnalysis(profileId);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
 
   const handleSubmit = async (data: ProfileFormData) => {
     setIsSubmitting(true);
@@ -53,6 +71,29 @@ export default function EditProfilePage() {
     }
   };
 
+  const handleAnalyzeClick = async () => {
+    const result = await analyzeProfile({ autoApply: false });
+    if (result) {
+      setIsAnalysisDialogOpen(true);
+    }
+  };
+
+  const handleApplyAnalysis = async (data: ApplyAnalysisDto) => {
+    const result = await applySuggestions(data);
+    if (result) {
+      setIsAnalysisDialogOpen(false);
+      // Refetch profile to get updated data
+      refetchProfile();
+    }
+  };
+
+  const handleAnalysisDialogClose = (open: boolean) => {
+    setIsAnalysisDialogOpen(open);
+    if (!open) {
+      clearAnalysisResult();
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -63,6 +104,7 @@ export default function EditProfilePage() {
             <Skeleton className="h-4 w-64" />
           </div>
         </div>
+        <Skeleton className="h-10 w-80" />
         <div className="w-full space-y-6">
           <Skeleton className="h-64" />
           <Skeleton className="h-48" />
@@ -97,9 +139,9 @@ export default function EditProfilePage() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Edit Profile</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{profile.name}</h1>
             <p className="text-muted-foreground">
-              Update your profile settings and voice guidelines.
+              Manage profile settings and historical posts.
             </p>
           </div>
         </div>
@@ -138,20 +180,56 @@ export default function EditProfilePage() {
         </AlertDialog>
       </div>
 
-      <div className="w-full">
-        <ProfileForm
-          defaultValues={{
-            name: profile.name,
-            bio: profile.bio,
-            tone: profile.tone,
-            doRules: profile.doRules,
-            dontRules: profile.dontRules,
-          }}
-          onSubmit={handleSubmit}
-          isLoading={isSubmitting}
-          submitLabel="Save Changes"
-        />
-      </div>
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList>
+          <TabsTrigger value="overview" className="gap-2">
+            <Settings className="h-4 w-4" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="historical-posts" className="gap-2">
+            <FileText className="h-4 w-4" />
+            Historical Posts
+            {stats && stats.totalPosts > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {stats.totalPosts}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="mt-6">
+          <ProfileForm
+            defaultValues={{
+              name: profile.name,
+              bio: profile.bio,
+              tone: profile.tone,
+              doRules: profile.doRules,
+              dontRules: profile.dontRules,
+            }}
+            onSubmit={handleSubmit}
+            isLoading={isSubmitting}
+            submitLabel="Save Changes"
+          />
+        </TabsContent>
+
+        <TabsContent value="historical-posts" className="mt-6">
+          <HistoricalPostList
+            profileId={profileId}
+            onAnalyzeClick={handleAnalyzeClick}
+            canAnalyze={canAnalyze}
+            isAnalyzing={isAnalyzing}
+          />
+        </TabsContent>
+      </Tabs>
+
+      {/* Analysis Review Dialog */}
+      <AnalysisReviewDialog
+        open={isAnalysisDialogOpen}
+        onOpenChange={handleAnalysisDialogClose}
+        analysisResult={analysisResult}
+        onApply={handleApplyAnalysis}
+        isApplying={isApplying}
+      />
     </div>
   );
 }

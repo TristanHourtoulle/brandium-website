@@ -27,6 +27,7 @@ export default function GeneratePage() {
 
   const {
     generatedPost,
+    generationContext,
     isGenerating,
     rateLimitStatus,
     isRateLimited,
@@ -220,6 +221,13 @@ export default function GeneratePage() {
                       {selectedPlatform.maxLength})
                     </span>
                   )}
+                </Badge>
+              )}
+
+              {/* Historical posts context */}
+              {generationContext?.historicalPostsUsed !== undefined && generationContext.historicalPostsUsed > 0 && (
+                <Badge variant='outline' className='text-xs text-blue-600 border-blue-600/50'>
+                  Style matched from {generationContext.historicalPostsUsed} post{generationContext.historicalPostsUsed !== 1 ? 's' : ''}
                 </Badge>
               )}
 

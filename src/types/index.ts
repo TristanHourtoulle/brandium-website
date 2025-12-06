@@ -6,3 +6,5 @@ export * from "./platform";
 export * from "./generate";
 export * from "./post";
 export * from "./iteration";
+export * from "./historical-post";
+export * from "./profile-analysis";
