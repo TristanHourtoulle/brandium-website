@@ -55,7 +55,7 @@ export function RefinementChat({
   const [refinementInput, setRefinementInput] = useState('');
   const [refinementMessages, setRefinementMessages] = useState<RefinementMessage[]>([]);
   const [initializedPostId, setInitializedPostId] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
 
   // Initialize chat with current post content as first message (only once per post)
   if (initialContent && postId !== initializedPostId) {
@@ -74,7 +74,13 @@ export function RefinementChat({
   useEffect(() => {
     // Use requestAnimationFrame to ensure DOM is updated before scrolling
     requestAnimationFrame(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      const viewport = scrollViewportRef.current;
+      if (viewport) {
+        viewport.scrollTo({
+          top: viewport.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
     });
   }, [refinementMessages, isIterating]);
 
@@ -121,7 +127,7 @@ export function RefinementChat({
   return (
     <div className='flex-1 flex flex-col min-h-0'>
       {/* Messages area */}
-      <ScrollArea className='flex-1 min-h-0'>
+      <ScrollArea className='flex-1 min-h-0' viewportRef={scrollViewportRef}>
         <div className='py-4 px-4 space-y-4'>
           {/* Welcome message */}
           {refinementMessages.length > 0 &&
@@ -154,8 +160,6 @@ export function RefinementChat({
             </div>
           )}
 
-          {/* Scroll anchor */}
-          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
@@ -176,8 +180,8 @@ export function RefinementChat({
         </div>
 
         {/* Input */}
-        <div className='flex items-end gap-2 rounded-full border bg-background p-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-600/20 focus-within:border-blue-600'>
-          <div className='flex items-center justify-center h-10 w-10 shrink-0'>
+        <div className='flex items-end gap-2 rounded-3xl border bg-background p-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-600/20 focus-within:border-blue-600'>
+          <div className='flex items-center justify-center h-10 w-10 shrink-0 self-end'>
             <Wand2 className='h-5 w-5 text-blue-600' />
           </div>
           <Textarea
@@ -195,7 +199,7 @@ export function RefinementChat({
             onClick={() => handleRefine(refinementInput)}
             disabled={!refinementInput.trim() || isIterating}
             className={cn(
-              'h-10 w-10 shrink-0 rounded-full transition-all',
+              'h-10 w-10 shrink-0 rounded-full transition-all self-end',
               refinementInput.trim() && !isIterating
                 ? 'bg-blue-600 hover:bg-blue-700 text-white'
                 : 'bg-muted text-muted-foreground'

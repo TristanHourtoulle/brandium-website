@@ -69,7 +69,7 @@ function IdeaCardComponent({
 
   return (
     <Card
-      className="group relative cursor-pointer transition-shadow hover:shadow-md"
+      className="group relative cursor-pointer hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.99] active:shadow-md"
       onClick={handleCardClick}
       role="article"
       aria-label={`Idea: ${idea.title}`}
@@ -90,7 +90,7 @@ function IdeaCardComponent({
       <CardHeader className={`pb-3 ${showCheckbox ? "pl-12" : ""}`}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0 space-y-1">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground/90">
               <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
               <time dateTime={idea.createdAt}>{formattedDate}</time>
               {idea.isUsed && (
@@ -152,7 +152,7 @@ function IdeaCardComponent({
         </CardDescription>
 
         {idea.suggestedGoal && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground/90">
             <Target className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{idea.suggestedGoal}</span>
           </div>
@@ -160,7 +160,7 @@ function IdeaCardComponent({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Relevance</span>
+            <span className="text-muted-foreground/90">Relevance</span>
             <span className="font-medium">{relevancePercent}%</span>
           </div>
           <Progress value={relevancePercent} className="h-1.5" />
@@ -203,36 +203,43 @@ function IdeaCardComponent({
 
 export const IdeaCard = memo(IdeaCardComponent);
 
-// Loading skeleton variant
+// Loading skeleton variant with improved animation
 export function IdeaCardSkeleton() {
   return (
     <Card className="group relative">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-5 w-3/4" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-3.5 w-3.5 rounded animate-pulse" />
+              <Skeleton className="h-4 w-24 animate-pulse" />
+            </div>
+            <Skeleton className="h-5 w-3/4 animate-pulse" />
           </div>
+          <Skeleton className="h-8 w-8 rounded-full animate-pulse" />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-2/3" />
+        <div className="space-y-1.5">
+          <Skeleton className="h-4 w-full animate-pulse" />
+          <Skeleton className="h-4 w-full animate-pulse" />
+          <Skeleton className="h-4 w-2/3 animate-pulse" />
         </div>
         <div className="space-y-2">
-          <Skeleton className="h-3 w-20" />
-          <Skeleton className="h-1.5 w-full" />
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-3 w-16 animate-pulse" />
+            <Skeleton className="h-3 w-8 animate-pulse" />
+          </div>
+          <Skeleton className="h-1.5 w-full rounded-full animate-pulse" />
         </div>
         <div className="flex gap-1.5">
-          <Skeleton className="h-5 w-12" />
-          <Skeleton className="h-5 w-16" />
-          <Skeleton className="h-5 w-14" />
+          <Skeleton className="h-5 w-12 rounded-full animate-pulse" />
+          <Skeleton className="h-5 w-16 rounded-full animate-pulse" />
+          <Skeleton className="h-5 w-14 rounded-full animate-pulse" />
         </div>
         <div className="flex gap-1.5">
-          <Skeleton className="h-5 w-20" />
-          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-5 w-20 rounded-full animate-pulse" />
+          <Skeleton className="h-5 w-16 rounded-full animate-pulse" />
         </div>
       </CardContent>
     </Card>

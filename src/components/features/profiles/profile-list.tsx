@@ -45,27 +45,42 @@ export function ProfileList({
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-40" />
+          <div
+            key={i}
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${i * 50}ms` }}
+          >
+            <Skeleton className="h-40 rounded-xl animate-pulse" />
+          </div>
         ))}
       </div>
     );
   }
 
   if (profiles.length === 0) {
-    return <ProfileEmptyState />;
+    return (
+      <div className="animate-fade-in">
+        <ProfileEmptyState />
+      </div>
+    );
   }
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {profiles.map((profile) => (
-          <ProfileCard
+      <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {profiles.map((profile, index) => (
+          <div
             key={profile.id}
-            profile={profile}
-            onDelete={handleDeleteClick}
-          />
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
+            <ProfileCard
+              profile={profile}
+              onDelete={handleDeleteClick}
+            />
+          </div>
         ))}
       </div>
 

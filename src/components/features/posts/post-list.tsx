@@ -22,12 +22,18 @@ export function PostList({
   if (isLoading) {
     return (
       <div
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3"
         aria-busy="true"
         aria-label="Loading posts"
       >
         {Array.from({ length: 6 }).map((_, index) => (
-          <PostCardSkeleton key={index} />
+          <div
+            key={index}
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
+            <PostCardSkeleton />
+          </div>
         ))}
       </div>
     );
@@ -41,23 +47,30 @@ export function PostList({
       Boolean(filters.projectId);
 
     return (
-      <PostEmptyState hasFilters={hasFilters} onClearFilters={onClearFilters} />
+      <div className="animate-fade-in">
+        <PostEmptyState hasFilters={hasFilters} onClearFilters={onClearFilters} />
+      </div>
     );
   }
 
   return (
     <div
-      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3"
       role="feed"
       aria-label="Posts list"
     >
-      {posts.map((post) => (
-        <PostCard
+      {posts.map((post, index) => (
+        <div
           key={post.id}
-          post={post}
-          onDelete={onDelete}
-          searchTerm={filters.search}
-        />
+          className="animate-fade-in-up"
+          style={{ animationDelay: `${index * 50}ms` }}
+        >
+          <PostCard
+            post={post}
+            onDelete={onDelete}
+            searchTerm={filters.search}
+          />
+        </div>
       ))}
     </div>
   );
