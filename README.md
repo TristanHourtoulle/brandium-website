@@ -876,6 +876,9 @@ pnpm typecheck        # Run TypeScript type checking
 pnpm test             # Run tests in watch mode
 pnpm test:run         # Run tests once
 pnpm test:coverage    # Run tests with coverage report
+
+# PWA
+pnpm generate:icons   # Generate PWA icons from source image
 ```
 
 ---
