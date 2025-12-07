@@ -328,3 +328,56 @@
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
+
+/* ================================
+   Performance Optimizations
+   ================================ */
+
+/* GPU acceleration for animated elements */
+.transform-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimize blur effects for GPU */
+.blur-optimized {
+  will-change: opacity;
+  transform: translateZ(0);
+}
+
+/* Reduced motion preference - respect user settings */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable blur effects for reduced motion */
+  .blur-3xl,
+  .blur-2xl,
+  .blur-xl {
+    filter: none !important;
+  }
+}
+
+/* Optimize common interactive elements */
+@layer base {
+  /* Cards and interactive elements */
+  [class*="hover:shadow"],
+  [class*="hover:-translate"] {
+    will-change: transform, box-shadow;
+    transform: translateZ(0);
+  }
+
+  /* Optimize transitions */
+  [class*="transition-all"],
+  [class*="transition-transform"] {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}

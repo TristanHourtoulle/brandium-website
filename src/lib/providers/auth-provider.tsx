@@ -6,6 +6,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react";
 import { AUTH_TOKEN_KEY } from "@/config/constants";
@@ -30,46 +31,51 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const hasInitialized = useRef(false);
 
   const isAuthenticated = !!user;
 
-  const loadUser = useCallback(async () => {
-    // Check if we're in the browser
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const token = localStorage.getItem(AUTH_TOKEN_KEY);
-    if (!token) {
-      setIsLoading(false);
-      setIsInitialized(true);
-      return;
-    }
-
-    try {
-      const userData = await authApi.getCurrentUser();
-      setUser(userData);
-    } catch (error) {
-      // Only remove token on auth errors (401), not on network errors
-      const statusCode = (error as { statusCode?: number })?.statusCode;
-      if (statusCode === 401 || statusCode === 403) {
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-      }
-      // Log error for debugging
-      console.error("Failed to load user:", error);
-    } finally {
-      setIsLoading(false);
-      setIsInitialized(true);
-    }
-  }, []);
-
+  // Initialize auth state only once on mount
   useEffect(() => {
-    // Only load user once on mount
-    if (!isInitialized) {
-      loadUser();
-    }
-  }, [loadUser, isInitialized]);
+    // Prevent double initialization (React 18 StrictMode)
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    let isMounted = true;
+
+    const initAuth = async () => {
+      // Check if we're in the browser
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      const token = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (!token) {
+        if (isMounted) setIsLoading(false);
+        return;
+      }
+
+      try {
+        const userData = await authApi.getCurrentUser();
+        if (isMounted) setUser(userData);
+      } catch (error) {
+        // Only remove token on auth errors (401), not on network errors
+        const statusCode = (error as { statusCode?: number })?.statusCode;
+        if (statusCode === 401 || statusCode === 403) {
+          localStorage.removeItem(AUTH_TOKEN_KEY);
+        }
+        console.error("Failed to load user:", error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    initAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     const response = await authApi.login(credentials);
