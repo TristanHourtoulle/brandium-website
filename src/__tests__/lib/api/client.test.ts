@@ -8,7 +8,8 @@ describe("ApiClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = mockFetch;
-    client = new ApiClient("http://localhost:3001");
+    // Create client with retry disabled by default for faster tests
+    client = new ApiClient("http://localhost:3001", { retry: { maxRetries: 0 } });
     (window.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(null);
   });
 
@@ -170,22 +171,26 @@ describe("ApiClient", () => {
 
   describe("error handling", () => {
     it("should handle network errors", async () => {
-      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockFetch.mockRejectedValueOnce(new TypeError("fetch failed"));
 
-      await expect(client.get("/test")).rejects.toThrow("Network error");
+      await expect(client.get("/test")).rejects.toMatchObject({
+        message: "Network error - please check your connection",
+        isNetworkError: true,
+      });
     });
 
     it("should handle JSON parse error in error response", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
+        statusText: "Internal Server Error",
         json: async () => {
           throw new Error("Not JSON");
         },
       });
 
-      await expect(client.get("/test")).rejects.toMatchObject({
-        message: "An error occurred",
+      await expect(client.get("/test", { retry: false })).rejects.toMatchObject({
+        message: "Internal Server Error",
         statusCode: 500,
       });
     });

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/page-header";
@@ -15,9 +16,7 @@ import {
 } from "@/components/ui/pagination";
 import { PostList, PostFiltersComponent } from "@/components/features/posts";
 import { usePosts } from "@/lib/hooks/use-posts";
-import { useProfiles } from "@/lib/hooks/use-profiles";
-import { useProjects } from "@/lib/hooks/use-projects";
-import { usePlatforms } from "@/lib/hooks/use-platforms";
+import { usePostsPageData } from "@/lib/hooks/use-posts-page-data";
 import { ROUTES } from "@/config/constants";
 import {
   AlertDialog,
@@ -45,9 +44,9 @@ export default function PostsPage() {
     resetFilters,
   } = usePosts();
 
-  const { profiles } = useProfiles();
-  const { projects } = useProjects();
-  const { platforms } = usePlatforms();
+  // Consolidated hook for filter options - fetched once in parallel
+  const { filterOptions } = usePostsPageData();
+  const { profiles, projects, platforms } = filterOptions;
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
@@ -70,9 +69,9 @@ export default function PostsPage() {
     setDeleteDialogOpen(false);
   }, []);
 
-  // Generate pagination items
-  const paginationItems = () => {
-    const items = [];
+  // Memoized pagination items to avoid recalculation on every render
+  const paginationItems = useMemo(() => {
+    const items: (number | string)[] = [];
     const { currentPage, totalPages } = pagination;
 
     // Always show first page
@@ -105,7 +104,7 @@ export default function PostsPage() {
     }
 
     return items;
-  };
+  }, [pagination]);
 
   return (
     <div className="space-y-6">
@@ -158,7 +157,7 @@ export default function PostsPage() {
               />
             </PaginationItem>
 
-            {paginationItems().map((item, index) => {
+            {paginationItems.map((item, index) => {
               if (item === "ellipsis-start" || item === "ellipsis-end") {
                 return (
                   <PaginationItem key={`ellipsis-${index}`}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import * as postsApi from "@/lib/api/posts";
 import type { Post, PostFilters, PaginationInfo } from "@/types";
@@ -40,9 +40,18 @@ export function usePosts(): UsePostsReturn {
     useState<PaginationInfo>(DEFAULT_PAGINATION);
   const [filters, setFiltersState] = useState<PostFilters>(DEFAULT_FILTERS);
 
+  // Prevent race conditions and double fetches
+  const fetchIdRef = useRef(0);
+  const hasFetchedRef = useRef(false);
+
   const fetchPosts = useCallback(
     async (newFilters?: PostFilters) => {
-      setIsLoading(true);
+      const fetchId = ++fetchIdRef.current;
+
+      // Only show loading on initial load, not on filter changes
+      if (!hasFetchedRef.current) {
+        setIsLoading(true);
+      }
       setError(null);
 
       const currentFilters = newFilters
@@ -51,13 +60,21 @@ export function usePosts(): UsePostsReturn {
 
       try {
         const response = await postsApi.fetchPosts(currentFilters);
+
+        // Ignore stale responses
+        if (fetchId !== fetchIdRef.current) return;
+
         setPosts(response?.posts ?? []);
         setPagination(response?.pagination ?? DEFAULT_PAGINATION);
+        hasFetchedRef.current = true;
 
         if (newFilters) {
           setFiltersState(currentFilters);
         }
       } catch (err) {
+        // Ignore errors from stale requests
+        if (fetchId !== fetchIdRef.current) return;
+
         const message =
           err instanceof Error ? err.message : "Failed to load posts";
         setError(message);
@@ -65,32 +82,32 @@ export function usePosts(): UsePostsReturn {
         setPagination(DEFAULT_PAGINATION);
         toast.error(message);
       } finally {
-        setIsLoading(false);
+        // Only update loading state for current request
+        if (fetchId === fetchIdRef.current) {
+          setIsLoading(false);
+        }
       }
     },
     [filters]
   );
 
-  const deletePost = useCallback(
-    async (id: string): Promise<boolean> => {
-      try {
-        await postsApi.deletePost(id);
-        setPosts((prev) => prev.filter((p) => p.id !== id));
-        setPagination((prev) => ({
-          ...prev,
-          totalItems: prev.totalItems - 1,
-        }));
-        toast.success("Post deleted successfully");
-        return true;
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Failed to delete post";
-        toast.error(message);
-        return false;
-      }
-    },
-    []
-  );
+  const deletePost = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      await postsApi.deletePost(id);
+      setPosts((prev) => prev.filter((p) => p.id !== id));
+      setPagination((prev) => ({
+        ...prev,
+        totalItems: prev.totalItems - 1,
+      }));
+      toast.success("Post deleted successfully");
+      return true;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete post";
+      toast.error(message);
+      return false;
+    }
+  }, []);
 
   const setFilters = useCallback((newFilters: PostFilters) => {
     setFiltersState((prev) => ({ ...prev, ...newFilters, page: 1 }));
@@ -98,30 +115,30 @@ export function usePosts(): UsePostsReturn {
 
   const nextPage = useCallback(() => {
     if (pagination.currentPage < pagination.totalPages) {
-      fetchPosts({ page: pagination.currentPage + 1 });
+      setFiltersState((prev) => ({ ...prev, page: pagination.currentPage + 1 }));
     }
-  }, [pagination.currentPage, pagination.totalPages, fetchPosts]);
+  }, [pagination.currentPage, pagination.totalPages]);
 
   const prevPage = useCallback(() => {
     if (pagination.currentPage > 1) {
-      fetchPosts({ page: pagination.currentPage - 1 });
+      setFiltersState((prev) => ({ ...prev, page: pagination.currentPage - 1 }));
     }
-  }, [pagination.currentPage, fetchPosts]);
+  }, [pagination.currentPage]);
 
   const goToPage = useCallback(
     (page: number) => {
       if (page >= 1 && page <= pagination.totalPages) {
-        fetchPosts({ page });
+        setFiltersState((prev) => ({ ...prev, page }));
       }
     },
-    [pagination.totalPages, fetchPosts]
+    [pagination.totalPages]
   );
 
   const resetFilters = useCallback(() => {
     setFiltersState(DEFAULT_FILTERS);
   }, []);
 
-  // Fetch posts when filters change
+  // Fetch posts when filters change - single effect
   useEffect(() => {
     fetchPosts();
   }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps

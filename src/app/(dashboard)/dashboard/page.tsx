@@ -1,13 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/hooks/use-auth";
-import { useProfiles } from "@/lib/hooks/use-profiles";
-import { useProjects } from "@/lib/hooks/use-projects";
-import { usePlatforms } from "@/lib/hooks/use-platforms";
-import { usePosts } from "@/lib/hooks/use-posts";
-import { usePostIdeas } from "@/lib/hooks/use-post-ideas";
+import { useDashboardData } from "@/lib/hooks/use-dashboard-data";
 import { useOnboardingContext } from "@/lib/providers/onboarding-provider";
 import { shouldShowOnboarding } from "@/lib/services/onboarding";
 import { Button } from "@/components/ui/button";
@@ -32,110 +28,116 @@ import {
 } from "lucide-react";
 import { ROUTES } from "@/config/constants";
 
+// Static data moved outside component to avoid recreation on each render
+const QUICK_ACTIONS = [
+  {
+    label: "Create Profile",
+    description: "Set up your personal brand identity",
+    icon: User,
+    href: `${ROUTES.PROFILES}/new`,
+  },
+  {
+    label: "Add Project",
+    description: "Showcase your work and achievements",
+    icon: Briefcase,
+    href: `${ROUTES.PROJECTS}/new`,
+  },
+  {
+    label: "Configure Platform",
+    description: "Connect your social media accounts",
+    icon: Share2,
+    href: `${ROUTES.PLATFORMS}/new`,
+  },
+] as const;
+
+// Utility functions moved outside component
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+function formatUserName(email: string | undefined): string {
+  if (!email) return "";
+  const name = email.split("@")[0];
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { profiles, isLoading: profilesLoading } = useProfiles();
-  const { projects, isLoading: projectsLoading } = useProjects();
-  const { platforms, isLoading: platformsLoading } = usePlatforms();
-  const { posts, isLoading: postsLoading, pagination } = usePosts();
-  const { isLoading: ideasLoading, pagination: ideasPagination } = usePostIdeas();
+  const { data, isLoading } = useDashboardData();
   const { openOnboarding, isOpen: isOnboardingOpen } = useOnboardingContext();
+  const hasCheckedOnboarding = useRef(false);
 
-  const recentPosts = posts.slice(0, 3);
+  // Memoized values
+  const greeting = useMemo(() => getGreeting(), []);
+  const userName = useMemo(() => formatUserName(user?.email), [user?.email]);
 
-  const isDataLoaded = !profilesLoading && !projectsLoading && !postsLoading;
+  // Memoized stats to avoid recreation on each render
+  const stats = useMemo(
+    () => [
+      {
+        label: "Profiles",
+        value: data.profiles.length,
+        icon: User,
+        href: ROUTES.PROFILES,
+      },
+      {
+        label: "Projects",
+        value: data.projects.length,
+        icon: Briefcase,
+        href: ROUTES.PROJECTS,
+      },
+      {
+        label: "Platforms",
+        value: data.platforms.length,
+        icon: Share2,
+        href: ROUTES.PLATFORMS,
+      },
+      {
+        label: "Ideas",
+        value: data.ideasPagination.totalItems,
+        icon: Lightbulb,
+        href: ROUTES.IDEAS,
+      },
+      {
+        label: "Posts",
+        value: data.postsPagination.totalItems,
+        icon: FileText,
+        href: ROUTES.POSTS,
+      },
+    ],
+    [
+      data.profiles.length,
+      data.projects.length,
+      data.platforms.length,
+      data.ideasPagination.totalItems,
+      data.postsPagination.totalItems,
+    ]
+  );
 
+  // Check onboarding only once when data is loaded
   useEffect(() => {
-    if (isDataLoaded && !isOnboardingOpen) {
+    if (!isLoading && !isOnboardingOpen && !hasCheckedOnboarding.current) {
+      hasCheckedOnboarding.current = true;
       const showOnboarding = shouldShowOnboarding(
-        profiles.length,
-        projects.length,
-        pagination.totalItems
+        data.profiles.length,
+        data.projects.length,
+        data.postsPagination.totalItems
       );
       if (showOnboarding) {
         openOnboarding();
       }
     }
   }, [
-    isDataLoaded,
-    profiles.length,
-    projects.length,
-    pagination.totalItems,
-    openOnboarding,
+    isLoading,
     isOnboardingOpen,
+    data.profiles.length,
+    data.projects.length,
+    data.postsPagination.totalItems,
+    openOnboarding,
   ]);
-
-  const stats = [
-    {
-      label: "Profiles",
-      value: profiles.length,
-      icon: User,
-      href: ROUTES.PROFILES,
-      isLoading: profilesLoading,
-    },
-    {
-      label: "Projects",
-      value: projects.length,
-      icon: Briefcase,
-      href: ROUTES.PROJECTS,
-      isLoading: projectsLoading,
-    },
-    {
-      label: "Platforms",
-      value: platforms.length,
-      icon: Share2,
-      href: ROUTES.PLATFORMS,
-      isLoading: platformsLoading,
-    },
-    {
-      label: "Ideas",
-      value: ideasPagination.totalItems,
-      icon: Lightbulb,
-      href: ROUTES.IDEAS,
-      isLoading: ideasLoading,
-    },
-    {
-      label: "Posts",
-      value: pagination.totalItems,
-      icon: FileText,
-      href: ROUTES.POSTS,
-      isLoading: postsLoading,
-    },
-  ];
-
-  const quickActions = [
-    {
-      label: "Create Profile",
-      description: "Set up your personal brand identity",
-      icon: User,
-      href: `${ROUTES.PROFILES}/new`,
-    },
-    {
-      label: "Add Project",
-      description: "Showcase your work and achievements",
-      icon: Briefcase,
-      href: `${ROUTES.PROJECTS}/new`,
-    },
-    {
-      label: "Configure Platform",
-      description: "Connect your social media accounts",
-      icon: Share2,
-      href: `${ROUTES.PLATFORMS}/new`,
-    },
-  ];
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
-  };
-
-  const getUserName = () => {
-    if (!user?.email) return "";
-    const name = user.email.split("@")[0];
-    return name.charAt(0).toUpperCase() + name.slice(1);
-  };
 
   return (
     <div className="space-y-6 md:space-y-8">
@@ -153,8 +155,8 @@ export default function DashboardPage() {
               <span className="text-sm font-medium text-primary">Dashboard</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight md:text-3xl">
-              {getGreeting()}
-              {getUserName() && `, ${getUserName()}`}
+              {greeting}
+              {userName && `, ${userName}`}
             </h1>
             <p className="text-muted-foreground/90 max-w-lg text-sm sm:text-base">
               Ready to create engaging content? Start by generating a new post
@@ -193,7 +195,7 @@ export default function DashboardPage() {
                       <p className="text-xs sm:text-sm font-medium text-muted-foreground/90">
                         {stat.label}
                       </p>
-                      {stat.isLoading ? (
+                      {isLoading ? (
                         <Skeleton className="h-7 sm:h-9 w-12 sm:w-16 animate-pulse" />
                       ) : (
                         <p className="text-2xl sm:text-3xl font-bold tracking-tight">
@@ -235,7 +237,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-2 sm:space-y-3">
-            {quickActions.map((action) => {
+            {QUICK_ACTIONS.map((action) => {
               const Icon = action.icon;
               return (
                 <Link
@@ -287,7 +289,7 @@ export default function DashboardPage() {
                   </CardDescription>
                 </div>
               </div>
-              {recentPosts.length > 0 && (
+              {data.posts.length > 0 && (
                 <Button variant="ghost" size="sm" className="gap-1 transition-all duration-200" asChild>
                   <Link href={ROUTES.POSTS}>
                     View all
@@ -298,7 +300,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {postsLoading ? (
+            {isLoading ? (
               <div className="space-y-2 sm:space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div
@@ -313,7 +315,7 @@ export default function DashboardPage() {
                   </div>
                 ))}
               </div>
-            ) : recentPosts.length === 0 ? (
+            ) : data.posts.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-muted-foreground/25 bg-muted/20 py-8 sm:py-12 px-4 sm:px-6 text-center">
                 <div className="relative mb-4">
                   <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl" />
@@ -337,7 +339,7 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="space-y-2 sm:space-y-3">
-                {recentPosts.map((post, index) => (
+                {data.posts.map((post, index) => (
                   <Link
                     key={post.id}
                     href={`${ROUTES.POSTS}/${post.id}`}
