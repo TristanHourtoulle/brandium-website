@@ -1,7 +1,9 @@
+import type { PostVersion } from "./iteration";
+
 export interface Post {
   id: string;
   userId: string;
-  content: string; // Mapped from generatedText
+  content: string; // Mapped from generatedText or selectedVersion.generatedText
   platformId?: string;
   profileId?: string;
   projectId?: string;
@@ -27,13 +29,41 @@ export interface Post {
     id: string;
     name: string;
   };
+
+  // v2.0: Versions array (populated in GET /api/posts/:id)
+  versions?: PostVersion[];
+  // v2.0: Selected version (convenience field)
+  selectedVersion?: PostVersion;
 }
 
-// Raw API response structure
+/**
+ * Raw API response structure for a post version
+ */
+export interface PostVersionApiResponse {
+  id: string;
+  versionNumber: number;
+  generatedText: string;
+  iterationType?: string | null;
+  iterationPrompt?: string | null;
+  approach?: string | null;
+  format?: string;
+  isSelected: boolean;
+  promptTokens?: number | null;
+  completionTokens?: number | null;
+  totalTokens?: number | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+/**
+ * Raw API response structure (v2.0 enhanced)
+ * Note: generatedText is DEPRECATED in v2.0 - use versions array instead
+ */
 export interface PostApiResponse {
   id: string;
   userId: string;
-  generatedText: string;
+  /** @deprecated In v2.0, use versions[].generatedText instead */
+  generatedText?: string;
   platformId?: string;
   profileId?: string;
   projectId?: string;
@@ -55,6 +85,8 @@ export interface PostApiResponse {
     id: string;
     name: string;
   };
+  // v2.0: Versions array (included in GET /api/posts/:id)
+  versions?: PostVersionApiResponse[];
 }
 
 export interface PostsApiResponse {

@@ -74,6 +74,7 @@ export class ApiClientError extends Error implements ApiError {
 // ================================
 
 const DEFAULT_TIMEOUT = 10000; // 10 seconds
+const LLM_TIMEOUT = 60000; // 60 seconds for LLM generation calls
 
 const DEFAULT_RETRY_CONFIG: RetryConfig = {
   maxRetries: 3,
@@ -82,8 +83,23 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
   retryableStatuses: [408, 429, 500, 502, 503, 504],
 };
 
+// LLM endpoints that need longer timeouts
+const LLM_ENDPOINTS = [
+  "/api/generate",
+  "/api/posts/",  // includes /api/posts/:id/iterate
+  "/api/ideas/generate",
+  "/api/templates/",  // includes generate from template
+];
+
 // Status codes that should NOT be retried (client errors)
 const NON_RETRYABLE_STATUSES = [400, 401, 403, 404, 422];
+
+/**
+ * Check if an endpoint requires LLM timeout
+ */
+function isLlmEndpoint(endpoint: string): boolean {
+  return LLM_ENDPOINTS.some((llmEndpoint) => endpoint.startsWith(llmEndpoint));
+}
 
 // ================================
 // Utility Functions
@@ -357,7 +373,11 @@ export class ApiClient {
     data?: unknown,
     options?: RequestConfig
   ): Promise<T> {
-    const timeout = options?.timeout ?? this.defaultTimeout;
+    // Use LLM timeout for generation endpoints
+    const defaultTimeoutForEndpoint = isLlmEndpoint(endpoint)
+      ? LLM_TIMEOUT
+      : this.defaultTimeout;
+    const timeout = options?.timeout ?? defaultTimeoutForEndpoint;
     const retryConfig =
       options?.retry === false
         ? false
@@ -483,8 +503,12 @@ export class ApiClient {
     return this.request<T>("PATCH", endpoint, data, options);
   }
 
-  async delete<T>(endpoint: string, options?: RequestConfig): Promise<T> {
-    return this.request<T>("DELETE", endpoint, undefined, options);
+  async delete<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: RequestConfig
+  ): Promise<T> {
+    return this.request<T>("DELETE", endpoint, data, options);
   }
 }
 

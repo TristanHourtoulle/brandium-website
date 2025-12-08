@@ -11,6 +11,9 @@ export const ROUTES = {
   PROJECTS: "/projects",
   PLATFORMS: "/platforms",
   GENERATE: "/generate",
+  GENERATE_HOOKS: "/generate/hooks",
+  GENERATE_VARIANTS: "/generate/variants",
+  TEMPLATES: "/templates",
   POSTS: "/posts",
   IDEAS: "/ideas",
 } as const;

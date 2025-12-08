@@ -134,7 +134,5 @@ export async function deleteBulkIdeas(
   ids: string[]
 ): Promise<DeleteBulkIdeasResponse> {
   const request: DeleteBulkIdeasRequest = { ids };
-  return apiClient.delete<DeleteBulkIdeasResponse>("/api/ideas", {
-    body: JSON.stringify(request),
-  });
+  return apiClient.delete<DeleteBulkIdeasResponse>("/api/ideas", request);
 }
