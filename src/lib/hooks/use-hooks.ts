@@ -5,15 +5,22 @@ import { toast } from "sonner";
 import type { Hook, HookType } from "@/types";
 import {
   generateHooks as generateHooksApi,
+  generateHooksFromPost as generateHooksFromPostApi,
   validateRawIdea,
   sortHooksByEngagement,
 } from "@/lib/api/hooks";
 import { getErrorMessage, isRateLimitError, formatRateLimitMessage } from "@/lib/utils/error-handler";
 
-interface GenerateOptions {
+interface GenerateFromIdeaOptions {
   goal?: string;
   profileId?: string;
   count?: number;
+}
+
+interface GenerateFromPostOptions {
+  variants?: number;
+  goal?: string;
+  profileId?: string;
 }
 
 interface UseHooksState {
@@ -22,7 +29,9 @@ interface UseHooksState {
   error: string | null;
   selectedHook: Hook | null;
   lastRawIdea: string | null;
-  lastOptions: GenerateOptions | null;
+  lastPostId: string | null;
+  lastOptions: GenerateFromIdeaOptions | GenerateFromPostOptions | null;
+  source: "idea" | "post" | null;
 }
 
 interface UseHooksOptions {
@@ -36,7 +45,12 @@ interface UseHooksReturn extends UseHooksState {
   /** Generate hooks for a raw idea */
   generate: (
     rawIdea: string,
-    options?: { goal?: string; profileId?: string; count?: number }
+    options?: GenerateFromIdeaOptions
+  ) => Promise<Hook[] | null>;
+  /** Generate hooks from an existing post */
+  generateFromPost: (
+    postId: string,
+    options?: GenerateFromPostOptions
   ) => Promise<Hook[] | null>;
   /** Select a hook */
   selectHook: (hook: Hook | null) => void;
@@ -48,7 +62,7 @@ interface UseHooksReturn extends UseHooksState {
   getBestHook: () => Hook | null;
   /** Check if we have hooks */
   hasHooks: boolean;
-  /** Regenerate with same rawIdea */
+  /** Regenerate with same source (rawIdea or postId) */
   regenerate: () => Promise<Hook[] | null>;
 }
 
@@ -61,13 +75,15 @@ export function useHooks(options: UseHooksOptions = {}): UseHooksReturn {
     error: null,
     selectedHook: null,
     lastRawIdea: null,
+    lastPostId: null,
     lastOptions: null,
+    source: null,
   });
 
   const generate = useCallback(
     async (
       rawIdea: string,
-      generateOptions?: { goal?: string; profileId?: string; count?: number }
+      generateOptions?: GenerateFromIdeaOptions
     ): Promise<Hook[] | null> => {
       // Validate input
       const validation = validateRawIdea(rawIdea);
@@ -84,7 +100,9 @@ export function useHooks(options: UseHooksOptions = {}): UseHooksReturn {
         isLoading: true,
         error: null,
         lastRawIdea: rawIdea,
+        lastPostId: null,
         lastOptions: generateOptions ?? null,
+        source: "idea",
       }));
 
       try {
@@ -126,16 +144,97 @@ export function useHooks(options: UseHooksOptions = {}): UseHooksReturn {
     [autoSort, showToasts]
   );
 
-  const regenerate = useCallback(async (): Promise<Hook[] | null> => {
-    if (!state.lastRawIdea) {
-      if (showToasts) {
-        toast.error("No previous idea to regenerate from");
+  const generateFromPost = useCallback(
+    async (
+      postId: string,
+      generateOptions?: GenerateFromPostOptions
+    ): Promise<Hook[] | null> => {
+      if (!postId) {
+        const errorMsg = "Post ID is required";
+        setState((prev) => ({ ...prev, error: errorMsg }));
+        if (showToasts) {
+          toast.error(errorMsg);
+        }
+        return null;
       }
-      return null;
+
+      setState((prev) => ({
+        ...prev,
+        isLoading: true,
+        error: null,
+        lastRawIdea: null,
+        lastPostId: postId,
+        lastOptions: generateOptions ?? null,
+        source: "post",
+      }));
+
+      try {
+        const hooks = await generateHooksFromPostApi(postId, generateOptions);
+
+        // Sort by engagement if enabled
+        const sortedHooks = autoSort ? sortHooksByEngagement(hooks) : hooks;
+
+        setState((prev) => ({
+          ...prev,
+          hooks: sortedHooks,
+          isLoading: false,
+          error: null,
+        }));
+
+        if (showToasts) {
+          toast.success(`Generated ${hooks.length} hook suggestions from post`);
+        }
+
+        return sortedHooks;
+      } catch (error) {
+        const errorMessage = isRateLimitError(error)
+          ? formatRateLimitMessage(error)
+          : getErrorMessage(error);
+
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: errorMessage,
+        }));
+
+        if (showToasts) {
+          toast.error(errorMessage);
+        }
+
+        return null;
+      }
+    },
+    [autoSort, showToasts]
+  );
+
+  const regenerate = useCallback(async (): Promise<Hook[] | null> => {
+    if (state.source === "post" && state.lastPostId) {
+      return generateFromPost(
+        state.lastPostId,
+        state.lastOptions as GenerateFromPostOptions | undefined
+      );
     }
-    // Pass the same options used in the last generation (including count)
-    return generate(state.lastRawIdea, state.lastOptions ?? undefined);
-  }, [state.lastRawIdea, state.lastOptions, generate, showToasts]);
+
+    if (state.source === "idea" && state.lastRawIdea) {
+      return generate(
+        state.lastRawIdea,
+        state.lastOptions as GenerateFromIdeaOptions | undefined
+      );
+    }
+
+    if (showToasts) {
+      toast.error("No previous generation to regenerate from");
+    }
+    return null;
+  }, [
+    state.source,
+    state.lastPostId,
+    state.lastRawIdea,
+    state.lastOptions,
+    generate,
+    generateFromPost,
+    showToasts,
+  ]);
 
   const selectHook = useCallback((hook: Hook | null) => {
     setState((prev) => ({ ...prev, selectedHook: hook }));
@@ -148,7 +247,9 @@ export function useHooks(options: UseHooksOptions = {}): UseHooksReturn {
       error: null,
       selectedHook: null,
       lastRawIdea: null,
+      lastPostId: null,
       lastOptions: null,
+      source: null,
     });
   }, []);
 
@@ -167,6 +268,7 @@ export function useHooks(options: UseHooksOptions = {}): UseHooksReturn {
   return {
     ...state,
     generate,
+    generateFromPost,
     regenerate,
     selectHook,
     clearHooks,

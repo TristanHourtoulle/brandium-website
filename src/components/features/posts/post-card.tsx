@@ -1,9 +1,9 @@
 "use client";
 
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, Trash2, Copy, Calendar, User } from "lucide-react";
+import { MoreHorizontal, Trash2, Copy, Calendar, User, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ import {
   formatPostDate,
   copyToClipboard,
 } from "@/lib/services/posts.service";
+import { HooksFromPostDialog } from "@/components/features/hooks";
 import type { Post } from "@/types";
 
 /**
@@ -73,6 +74,7 @@ interface PostCardProps {
 
 function PostCardComponent({ post, onDelete, searchTerm }: PostCardProps) {
   const router = useRouter();
+  const [isHooksDialogOpen, setIsHooksDialogOpen] = useState(false);
 
   const handleCardClick = () => {
     router.push(`${ROUTES.POSTS}/${post.id}`);
@@ -86,6 +88,11 @@ function PostCardComponent({ post, onDelete, searchTerm }: PostCardProps) {
     } else {
       toast.error("Failed to copy post");
     }
+  };
+
+  const handleGenerateHooks = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsHooksDialogOpen(true);
   };
 
   // Extract first sentence as title (the hook)
@@ -134,6 +141,10 @@ function PostCardComponent({ post, onDelete, searchTerm }: PostCardProps) {
               <DropdownMenuItem asChild>
                 <Link href={`${ROUTES.POSTS}/${post.id}`}>View details</Link>
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleGenerateHooks}>
+                <Zap className="mr-2 h-4 w-4 text-yellow-500" />
+                Generate Hooks
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleCopy}>
                 <Copy className="mr-2 h-4 w-4" />
                 Copy to clipboard
@@ -180,6 +191,14 @@ function PostCardComponent({ post, onDelete, searchTerm }: PostCardProps) {
           )}
         </div>
       </CardContent>
+
+      {/* Hooks Generation Dialog */}
+      <HooksFromPostDialog
+        postId={post.id}
+        postTitle={title}
+        open={isHooksDialogOpen}
+        onOpenChange={setIsHooksDialogOpen}
+      />
     </Card>
   );
 }

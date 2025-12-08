@@ -15,11 +15,39 @@ export interface Hook {
   estimatedEngagement: number; // 1-10
 }
 
-export interface GenerateHooksRequest {
+/**
+ * Generate hooks from a raw idea (legacy mode)
+ */
+export interface GenerateHooksFromIdeaRequest {
   rawIdea: string;
   goal?: string;
   profileId?: string;
   count?: number; // 1-10, default: 4
+}
+
+/**
+ * Generate hooks from an existing post (new mode)
+ * Provides better context for hook generation
+ */
+export interface GenerateHooksFromPostRequest {
+  postId: string;
+  variants?: number; // 1-3, default: 2 (variants per hook type)
+  goal?: string;
+  profileId?: string;
+}
+
+/**
+ * Union type for hook generation request
+ */
+export type GenerateHooksRequest = GenerateHooksFromIdeaRequest | GenerateHooksFromPostRequest;
+
+/**
+ * Type guard to check if request is from post
+ */
+export function isHooksFromPostRequest(
+  request: GenerateHooksRequest
+): request is GenerateHooksFromPostRequest {
+  return "postId" in request;
 }
 
 export interface GenerateHooksResponse {
@@ -27,6 +55,7 @@ export interface GenerateHooksResponse {
   data: {
     hooks: Hook[];
     totalHooks: number;
+    source?: "post" | "rawIdea"; // Indicates the source of generation
   };
 }
 

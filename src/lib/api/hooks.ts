@@ -3,8 +3,11 @@ import type {
   Hook,
   HookType,
   GenerateHooksRequest,
+  GenerateHooksFromIdeaRequest,
+  GenerateHooksFromPostRequest,
   GenerateHooksResponse,
 } from "@/types";
+import { isHooksFromPostRequest } from "@/types";
 
 const HOOKS_ENDPOINT = "/api/generate/hooks";
 
@@ -57,7 +60,7 @@ export const HOOK_TYPES: Record<
 // ================================
 
 /**
- * Generate hooks for a post idea
+ * Generate hooks for a post idea (from raw idea)
  * @param rawIdea - The post idea (5-500 characters)
  * @param options - Optional: goal, profileId, count
  * @returns Array of hooks with type, text, and engagement score
@@ -70,7 +73,7 @@ export async function generateHooks(
     count?: number;
   }
 ): Promise<Hook[]> {
-  const request: GenerateHooksRequest = {
+  const request: GenerateHooksFromIdeaRequest = {
     rawIdea,
     goal: options?.goal,
     profileId: options?.profileId,
@@ -86,7 +89,66 @@ export async function generateHooks(
 }
 
 /**
+ * Generate hooks from an existing post
+ * This provides better context for hook generation as the API has access
+ * to the full post content, profile, and platform information.
+ *
+ * @param postId - UUID of the existing post
+ * @param options - Optional: variants (1-3), goal, profileId
+ * @returns Array of hooks with type, text, and engagement score
+ */
+export async function generateHooksFromPost(
+  postId: string,
+  options?: {
+    variants?: number;
+    goal?: string;
+    profileId?: string;
+  }
+): Promise<Hook[]> {
+  const request: GenerateHooksFromPostRequest = {
+    postId,
+    variants: options?.variants ?? 2,
+    goal: options?.goal,
+    profileId: options?.profileId,
+  };
+
+  const response = await apiClient.post<GenerateHooksResponse>(
+    HOOKS_ENDPOINT,
+    request
+  );
+
+  return response.data.hooks;
+}
+
+/**
+ * Generate hooks from an existing post with full metadata response
+ */
+export async function generateHooksFromPostWithMeta(
+  postId: string,
+  options?: {
+    variants?: number;
+    goal?: string;
+    profileId?: string;
+  }
+): Promise<GenerateHooksResponse["data"]> {
+  const request: GenerateHooksFromPostRequest = {
+    postId,
+    variants: options?.variants ?? 2,
+    goal: options?.goal,
+    profileId: options?.profileId,
+  };
+
+  const response = await apiClient.post<GenerateHooksResponse>(
+    HOOKS_ENDPOINT,
+    request
+  );
+
+  return response.data;
+}
+
+/**
  * Generate hooks with full response (includes totalHooks)
+ * Works with both rawIdea and postId modes
  */
 export async function generateHooksWithMeta(
   request: GenerateHooksRequest
@@ -98,6 +160,11 @@ export async function generateHooksWithMeta(
 
   return response.data;
 }
+
+/**
+ * Type guard re-export for convenience
+ */
+export { isHooksFromPostRequest };
 
 // ================================
 // Helper Functions

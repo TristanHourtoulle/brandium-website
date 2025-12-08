@@ -9,6 +9,7 @@ import {
   Trash2,
   Wand2,
   Check,
+  Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,7 @@ import {
 } from '@/lib/services/posts.service';
 import { ROUTES } from '@/config/constants';
 import { RefinementChat, PostDetailsSidebar } from '@/components/features/posts';
+import { HooksFromPostDialog } from '@/components/features/hooks';
 
 interface PostDetailPageProps {
   params: Promise<{ id: string }>;
@@ -50,6 +52,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   const [copied, setCopied] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isHooksDialogOpen, setIsHooksDialogOpen] = useState(false);
 
   const {
     versions,
@@ -192,6 +195,15 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
             <Button
               variant='outline'
               size='sm'
+              onClick={() => setIsHooksDialogOpen(true)}
+              className='gap-1'
+            >
+              <Zap className='h-4 w-4 text-yellow-500' />
+              <span className='hidden sm:inline'>Hooks</span>
+            </Button>
+            <Button
+              variant='outline'
+              size='sm'
               onClick={handleCopy}
               disabled={copied}
             >
@@ -262,6 +274,19 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           onRefine={handleRefine}
         />
       </div>
+
+      {/* Hooks Generation Dialog */}
+      <HooksFromPostDialog
+        postId={post.id}
+        postTitle={post.rawIdea || displayContent.slice(0, 100)}
+        open={isHooksDialogOpen}
+        onOpenChange={setIsHooksDialogOpen}
+        onHookReplaced={() => {
+          // Refresh post data and versions after hook replacement
+          refetch();
+          fetchVersions(post.id);
+        }}
+      />
     </div>
   );
 }
