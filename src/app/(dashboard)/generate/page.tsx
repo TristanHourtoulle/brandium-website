@@ -7,20 +7,30 @@ import { useProjects } from '@/lib/hooks/use-projects';
 import { usePlatforms } from '@/lib/hooks/use-platforms';
 import { useGenerate } from '@/lib/hooks/use-generate';
 import { usePostIdea } from '@/lib/hooks/use-post-ideas';
+import { useTemplate } from '@/lib/hooks/use-templates';
 import { ChatContainer, type Message } from '@/components/features/chat';
 import {
   RateLimitStatusDisplay,
   GenerationConfig,
 } from '@/components/features/generate';
-import { Card } from '@/components/ui/card';
+import { VariableInputForm, TemplatePreviewInline } from '@/components/features/templates';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Sparkles, Copy, Check, ExternalLink } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Sparkles, Copy, Check, ExternalLink, FileText, X, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/lib/utils/format';
 import { ROUTES } from '@/config/constants';
+import { renderTemplateContent } from '@/lib/api/templates';
 import type { PostIdea } from '@/types/idea';
+import type { Template } from '@/types';
 
 // Loading skeleton for when idea is loading
 function GeneratePageSkeleton() {
@@ -73,9 +83,11 @@ function GeneratePageSkeleton() {
 interface GeneratePageContentProps {
   idea: PostIdea | null;
   defaultProfileId: string;
+  hookText?: string | null;
+  template?: Template | null;
 }
 
-function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProps) {
+function GeneratePageContent({ idea, defaultProfileId, hookText, template }: GeneratePageContentProps) {
   const router = useRouter();
   const { profiles, isLoading: profilesLoading } = useProfiles();
   const { projects, isLoading: projectsLoading } = useProjects();
@@ -91,27 +103,53 @@ function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProp
     regenerate,
   } = useGenerate();
 
-  // Configuration state - initialized from idea or defaults
-  // Using function initializer ensures this only runs once on mount
+  // Configuration state - initialized from idea, template, or defaults
   const [selectedProfileId, setSelectedProfileId] = useState<string>(() =>
-    idea?.profile?.id ?? defaultProfileId
+    idea?.profile?.id ?? template?.profileId ?? defaultProfileId
   );
   const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(() =>
     idea?.project?.id
   );
   const [selectedPlatformId, setSelectedPlatformId] = useState<string | undefined>(() =>
-    idea?.platform?.id
+    idea?.platform?.id ?? template?.platformId ?? undefined
   );
   const [goal, setGoal] = useState<string>(() =>
     idea?.suggestedGoal ?? ''
   );
 
+  // Template variable values state
+  const [templateVariables, setTemplateVariables] = useState<Record<string, string>>(() =>
+    template?.exampleVariables ?? {}
+  );
+  const [showTemplatePanel, setShowTemplatePanel] = useState(!!template);
+
   // Chat messages state - starts empty, user will send the pre-filled message
   const [messages, setMessages] = useState<Message[]>([]);
   const [copied, setCopied] = useState(false);
 
-  // Compute the default input value from idea (title + description)
-  const defaultInputValue = idea ? `${idea.title}\n\n${idea.description}` : undefined;
+  // Handle template variable change
+  const handleTemplateVariableChange = useCallback((name: string, value: string) => {
+    setTemplateVariables(prev => ({ ...prev, [name]: value }));
+  }, []);
+
+  // Generate rendered template content
+  const renderedTemplateContent = template
+    ? renderTemplateContent(template.content, templateVariables)
+    : '';
+
+  // Check if all required template variables are filled
+  const templateReady = !template || template.variables.every(
+    v => !v.required || templateVariables[v.name]?.trim()
+  );
+
+  // Compute the default input value
+  const defaultInputValue = template
+    ? renderedTemplateContent
+    : hookText
+      ? hookText
+      : idea
+        ? `${idea.title}\n\n${idea.description}`
+        : undefined;
 
   const handleSendMessage = useCallback(
     async (message: string) => {
@@ -206,11 +244,37 @@ function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProp
             <div>
               <h1 className='text-lg font-semibold'>AI Content Generator</h1>
               <p className='text-sm text-muted-foreground/90'>
-                {idea ? `Creating post from idea: ${idea.title}` : 'Chat with AI to create personalized posts'}
+                {template
+                  ? `Using template: ${template.name}`
+                  : hookText
+                    ? 'Creating post from your selected hook'
+                    : idea
+                      ? `Creating post from idea: ${idea.title}`
+                      : 'Chat with AI to create personalized posts'}
               </p>
             </div>
           </div>
-          <RateLimitStatusDisplay status={rateLimitStatus} />
+          <div className='flex items-center gap-2'>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={() => router.push(ROUTES.GENERATE_VARIANTS)}
+                    className='hidden sm:flex'
+                  >
+                    <Layers className='h-4 w-4 mr-2' />
+                    A/B Variants
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Generate multiple post variations with different approaches for A/B testing</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <RateLimitStatusDisplay status={rateLimitStatus} />
+          </div>
         </div>
       </div>
 
@@ -236,6 +300,38 @@ function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProp
             disabled={isGenerating}
             className='py-4'
           />
+
+          {/* Template Variables Panel */}
+          {template && showTemplatePanel && (
+            <div className='border-t p-4 space-y-4'>
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center gap-2'>
+                  <FileText className='h-4 w-4 text-primary' />
+                  <span className='text-sm font-medium'>Template Variables</span>
+                </div>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='h-6 w-6'
+                  onClick={() => setShowTemplatePanel(false)}
+                >
+                  <X className='h-4 w-4' />
+                </Button>
+              </div>
+              <VariableInputForm
+                variables={template.variables}
+                values={templateVariables}
+                exampleValues={template.exampleVariables ?? undefined}
+                onChange={handleTemplateVariableChange}
+                disabled={isGenerating}
+              />
+              {!templateReady && (
+                <p className='text-xs text-amber-600'>
+                  Fill in all required variables to generate your post
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Chat area */}
@@ -336,11 +432,18 @@ function GeneratePageContent({ idea, defaultProfileId }: GeneratePageContentProp
 export default function GeneratePage() {
   const searchParams = useSearchParams();
   const ideaId = searchParams.get('ideaId');
+  const hookText = searchParams.get('hook');
+  const templateId = searchParams.get('templateId');
   const { profiles, isLoading: profilesLoading } = useProfiles();
   const { idea, isLoading: ideaLoading } = usePostIdea(ideaId);
+  const { template, isLoading: templateLoading } = useTemplate(templateId);
 
-  // Show skeleton while loading idea or profiles (needed for default)
+  // Show skeleton while loading idea, template, or profiles (needed for default)
   if (ideaId && ideaLoading) {
+    return <GeneratePageSkeleton />;
+  }
+
+  if (templateId && templateLoading) {
     return <GeneratePageSkeleton />;
   }
 
@@ -350,12 +453,14 @@ export default function GeneratePage() {
 
   const defaultProfileId = profiles.length > 0 ? profiles[0].id : '';
 
-  // Use key to force remount when ideaId changes, ensuring state is re-initialized
+  // Use key to force remount when ideaId, hook, or templateId changes, ensuring state is re-initialized
   return (
     <GeneratePageContent
-      key={ideaId ?? 'no-idea'}
+      key={ideaId ?? hookText ?? templateId ?? 'no-context'}
       idea={idea}
       defaultProfileId={defaultProfileId}
+      template={template}
+      hookText={hookText}
     />
   );
 }

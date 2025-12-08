@@ -12,6 +12,8 @@ import {
   LifeBuoy,
   Send,
   Lightbulb,
+  Zap,
+  Layout,
 } from "lucide-react";
 
 import { useAuth } from "@/lib/hooks/use-auth";
@@ -49,6 +51,16 @@ const platformNavItems = [
     title: "Ideas",
     url: ROUTES.IDEAS,
     icon: Lightbulb,
+  },
+  {
+    title: "Hooks",
+    url: ROUTES.GENERATE_HOOKS,
+    icon: Zap,
+  },
+  {
+    title: "Templates",
+    url: ROUTES.TEMPLATES,
+    icon: Layout,
   },
   {
     title: "Posts",

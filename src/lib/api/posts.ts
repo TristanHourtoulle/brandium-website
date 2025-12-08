@@ -6,6 +6,11 @@ import type {
   PostsQueryParams,
   PostsApiResponse,
   PostApiResponse,
+  PostVersion,
+  PostVersionApiResponse,
+  IterationType,
+  VariantApproach,
+  LinkedInFormat,
 } from "@/types";
 
 /**
@@ -28,13 +33,49 @@ function buildQueryString(filters: PostFilters): string {
 }
 
 /**
+ * Transform API version response to frontend PostVersion type
+ */
+function transformVersion(apiVersion: PostVersionApiResponse): PostVersion {
+  return {
+    id: apiVersion.id,
+    versionNumber: apiVersion.versionNumber,
+    generatedText: apiVersion.generatedText,
+    iterationType: apiVersion.iterationType as IterationType | null | undefined,
+    iterationPrompt: apiVersion.iterationPrompt ?? null,
+    approach: apiVersion.approach as VariantApproach | null | undefined,
+    format: (apiVersion.format as LinkedInFormat) || "opinion",
+    isSelected: apiVersion.isSelected,
+    usage: {
+      promptTokens: apiVersion.promptTokens ?? 0,
+      completionTokens: apiVersion.completionTokens ?? 0,
+      totalTokens: apiVersion.totalTokens ?? 0,
+    },
+    promptTokens: apiVersion.promptTokens,
+    completionTokens: apiVersion.completionTokens,
+    totalTokens: apiVersion.totalTokens,
+    createdAt: apiVersion.createdAt,
+    updatedAt: apiVersion.updatedAt,
+  };
+}
+
+/**
  * Transform API post response to frontend Post type
+ * Handles both v1.x (generatedText) and v2.0 (versions array) responses
  */
 function transformPost(apiPost: PostApiResponse): Post {
+  // Transform versions if present (v2.0)
+  const versions = apiPost.versions?.map(transformVersion);
+
+  // Find selected version or use the latest one
+  const selectedVersion = versions?.find((v) => v.isSelected) ?? versions?.[versions.length - 1];
+
+  // Get content from selected version or fallback to generatedText (v1.x compatibility)
+  const content = selectedVersion?.generatedText ?? apiPost.generatedText ?? "";
+
   return {
     id: apiPost.id,
     userId: apiPost.userId,
-    content: apiPost.generatedText, // Map generatedText to content
+    content,
     platformId: apiPost.platformId,
     profileId: apiPost.profileId,
     projectId: apiPost.projectId,
@@ -44,11 +85,14 @@ function transformPost(apiPost: PostApiResponse): Post {
     updatedAt: apiPost.updatedAt,
     // Version tracking
     currentVersionId: apiPost.currentVersionId,
-    totalVersions: apiPost.totalVersions ?? 1,
+    totalVersions: apiPost.totalVersions ?? versions?.length ?? 1,
     // Relations
     platform: apiPost.platform,
     profile: apiPost.profile,
     project: apiPost.project,
+    // v2.0: Include versions array
+    versions,
+    selectedVersion,
   };
 }
 
@@ -80,7 +124,7 @@ export async function fetchPosts(
 }
 
 /**
- * Fetch a single post by ID
+ * Fetch a single post by ID (includes versions in v2.0)
  */
 export async function fetchPostById(id: string): Promise<Post> {
   const response = await apiClient.get<{ data: PostApiResponse }>(`/api/posts/${id}`);
@@ -92,4 +136,30 @@ export async function fetchPostById(id: string): Promise<Post> {
  */
 export async function deletePost(id: string): Promise<void> {
   await apiClient.delete<void>(`/api/posts/${id}`);
+}
+
+/**
+ * Get the content to display for a post
+ * Uses selected version content or falls back to post.content
+ */
+export function getPostDisplayContent(post: Post): string {
+  return post.selectedVersion?.generatedText ?? post.content;
+}
+
+/**
+ * Get the version info for display
+ */
+export function getPostVersionInfo(post: Post): {
+  currentVersion: number;
+  totalVersions: number;
+  hasMultipleVersions: boolean;
+} {
+  const currentVersion = post.selectedVersion?.versionNumber ?? 1;
+  const totalVersions = post.totalVersions ?? post.versions?.length ?? 1;
+
+  return {
+    currentVersion,
+    totalVersions,
+    hasMultipleVersions: totalVersions > 1,
+  };
 }

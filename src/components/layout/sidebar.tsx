@@ -24,6 +24,7 @@ import {
   FileText,
   LogOut,
   ChevronDown,
+  Zap,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -33,6 +34,7 @@ const navItems = [
   { href: ROUTES.PROJECTS, icon: Briefcase, label: "Projects" },
   { href: ROUTES.PLATFORMS, icon: Share2, label: "Platforms" },
   { href: ROUTES.GENERATE, icon: Wand2, label: "Generate" },
+  { href: ROUTES.GENERATE_HOOKS, icon: Zap, label: "Hooks" },
   { href: ROUTES.POSTS, icon: FileText, label: "Posts" },
 ];
 

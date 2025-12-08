@@ -93,9 +93,16 @@ export default function DashboardLayout({
   return (
     <OnboardingProvider>
       <SidebarProvider>
+        {/* Skip to content link for keyboard navigation */}
+        <a
+          href='#main-content'
+          className='sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-md focus:outline-none focus:ring-2 focus:ring-ring'
+        >
+          Skip to main content
+        </a>
         <AppSidebar />
         <SidebarInset>
-          <header className='flex flex-col shrink-0'>
+          <header className='flex flex-col shrink-0' role='banner'>
             <div className='flex h-12 items-center gap-2 px-4'>
               <SidebarTrigger className='-ml-1 hover:cursor-pointer hover:bg-blue-600/10 hover:text-blue-600 transition-colors' />
               <Separator orientation='vertical' className='mr-2 h-4' />
